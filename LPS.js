@@ -79,7 +79,8 @@ client.on('message', (message) => {
       { name: 'Commands:', value: `
         ${prefix}help  :  Displays this help page
         ${prefix}ping  :  Responds with Pong to check Bot responce
-        ${prefix}setPrefix <new prefix>  :  Sets new prefix  
+        ${prefix}setPrefix <new prefix>  :  Sets new prefix
+        ${prefix}login <email> <password>  :  Login to LPS account (DM only command)
         `
       },
       { name: '\u200B', value: '\u200B' }
