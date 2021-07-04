@@ -1,4 +1,5 @@
-const mongodb = require('mongodb');
+const MongoClient = require('mongodb').MongoClient;
+const bcrypt = require('bcrypt');
 const socket = require('socket.io');
 const Discord = require('discord.js');
 const client = new Discord.Client();
@@ -20,9 +21,31 @@ async function newPrefix(message, n) {
 
 // Remote Login
 async function remoteLogin(message, args) {
-  if (!args) return message.channel.send(`You must provide a **username** and **password** ${message.author}!`);
-  if (!args[1]) return message.channel.sned(`You must provide a **password** ${message.author}!`);
-  // Login logic???
+  if (args.length==0) return message.author.send(`You must provide a **email** and **password** ${message.author}!`);
+  if (!args[0]==null||!args[0]==undefined&&args[1]==null||args[1]==undefined) return message.author.send(`You must provide a **password** ${message.author}!`);
+
+  MongoClient.connect(config.mongoURI,{useUnifiedTopology:true},function(err, db) {
+    if (err) throw err;
+    let dbo = db.db("knoldus");
+    dbo.collection("users").findOne({"user.email":args[0]}, function(err, result) {
+      if (err) throw err;
+      if (result==null||result==undefined) return message.author.send(`Cannot find the email **${args[0]}** ${message.author}!`);
+      
+      // Match Password
+      bcrypt.compare(args[1], result.user.password, (err, isMatch) => {
+          if (err) throw err;
+          if (isMatch) {
+            // Log in data Discord is linked to this email for LPS
+            data.userAcc[message.author] = result.user.email;
+            console.log(data);
+            return message.author.send(`Logged in as **${result.user.username}** ${message.author}!`);
+          } else {
+            return message.author.send(`Incorrect password for **${args[0]}** ${message.author}!`);            
+          }
+        });
+      db.close();
+    });
+  });
 }
 
 client.on('ready', () => {
@@ -72,10 +95,8 @@ client.on('message', (message) => {
   }
   // Login
   if (command == 'login') {
-    console.log(message.channel.type);
     if (message.channel.type=="text") return message.channel.send(`You must direct message me to login ${message.author}!`);
-    message.author.send("Login");
-    //remoteLogin(message, args);
+    remoteLogin(message, args);
   }
 });
 

@@ -1,5 +1,6 @@
 {
 	"defaultPrefix": "?",
 	"token": "ODYwMjk4NjgxMDQ3MDU2NDM0.YN5NlQ.EeoaT9X-Qk8mg26E3vircZkPlus",
-	"botID": "860298681047056434"
+	"botID": "860298681047056434",
+	"mongoURI": "mongodb://localhost/27017"
 }
