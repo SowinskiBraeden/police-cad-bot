@@ -35,9 +35,8 @@ async function remoteLogin(message, args) {
       bcrypt.compare(args[1], result.user.password, (err, isMatch) => {
           if (err) throw err;
           if (isMatch) {
-            // Log in data Discord is linked to this email for LPS
+            // Log in data.json Discord is linked to this email for LPS
             data.userAcc[message.author] = result.user.email;
-            console.log(data);
             return message.author.send(`Logged in as **${result.user.username}** ${message.author}!`);
           } else {
             return message.author.send(`Incorrect password for **${args[0]}** ${message.author}!`);            
