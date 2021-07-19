@@ -12,8 +12,10 @@
   "dependencies": {
     "bcrypt": "^5.0.1",
     "discord.js": "^12.5.3",
+    "express": "^4.17.1",
     "mongodb": "^3.6.8",
     "nodemon": "^2.0.9",
-    "socket.io": "^4.1.2"
+    "socket.io": "^4.1.2",
+    "socket.io-client": "^4.1.2"
   }
 }
