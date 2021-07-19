@@ -1,0 +1,6 @@
+{
+	"defaultPrefix": "?",
+	"token": "",
+	"botID": "",
+	"mongoURI": "mongodb://localhost/27017"
+}
