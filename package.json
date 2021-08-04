@@ -5,7 +5,7 @@
   "main": "LPS.js",
   "scripts": {
     "start": "node LPS.js",
-    "dev": "nodemon LPS.js"
+    "dev": "nodemon dev.js"
   },
   "author": "Braeden Sowinski",
   "license": "ISC",

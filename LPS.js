@@ -60,10 +60,10 @@ async function remoteLogout(message) {
   });
 }
 
-async function getUser(message) {
+async function getUser(id) {
   let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
   let dbo = db.db(config.dbo);
-  return await dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+  return await dbo.collection("users").findOne({"user.discord.id":id}).then(user => user);
 }
 
 async function account(message) {
@@ -74,10 +74,20 @@ async function account(message) {
 }
 
 async function checkStatus(message, args) {
-  getUser(message).then(user => {
-    if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
-    return message.channel.send(`${message.author}'s status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
-  });
+  if (args.length==0) {
+    getUser(message.author.id).then(user => {
+      if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
+      return message.channel.send(`${message.author}'s status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
+    });
+  } else {
+    getUser(args[0].id).then(user => {
+      if (user==null) return message.channel.send(`Cannot find **${args[0]}** ${message.author}!`);
+      // This lame code to get username without ping on discord
+      let id = args[0].replace('<@!', '').replace('>', '');
+      const User = client.users.cache.get(id);
+      return message.channel.send(`${message.author}, **${User.tag}'s** status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
+    });
+  }
 }
 
 async function updateStatus(message, args, prefix) {
@@ -176,7 +186,7 @@ client.on('message', (message) => {
     let help = new Discord.MessageEmbed()
       .setColor('#0099ff')
       .setTitle('**Commands:**')
-      .setURL('https://www.linespolice-cad.com/')
+      .setURL('https://discord.gg/jgUW656v2t')
       .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
       .setDescription('Lines Police CAD Bot Commands')
       .addFields(
@@ -186,12 +196,10 @@ client.on('message', (message) => {
         { name: `**${prefix}login** <email> <password>`, value: 'Login to LPS account (DM only command)', inline: true },
         { name: `**${prefix}logout**`, value: 'Logs out of your current logged in account', inline: true },
         { name: `**${prefix}validStatus**`, value: 'Shows list of valid statuses to updade to', inline: true },
-        { name: `**${prefix}checkStatus**`, value: 'Checks your current status', inline: true },
+        { name: `**${prefix}checkStatus** <user>`, value: 'Leave user blank to check own status', inline: true },
         { name: `**${prefix}updateStatus** <status>`, value: 'Updates your status', inline: true },
         { name: `**${prefix}account**`, value: 'returns logged in account', inline: true },
-        { name: `**${prefix}penalCodes**`, value: 'Provides Link to penal codes', inline: true },
-        { name: `**${prefix}` }
-      )
+        { name: `**${prefix}penalCodes**`, value: 'Provides Link to penal codes', inline: true }      )
 
     if (command == 'ping') message.channel.send('Pong!');
     if (command == 'help') message.channel.send(help);
@@ -207,13 +215,20 @@ client.on('message', (message) => {
     }
     if (command == 'logout') remoteLogout(message);
     if (command == 'validstatus') return message.channel.send(validStatus);
-    if (command == 'checkstatus') checkStatus(message);
+    if (command == 'checkstatus') checkStatus(message, args);
     if (command == 'updatestatus') updateStatus(message, args, prefix);
     if (command == 'account') account(message);
     if (command == 'penalcodes') return message.channel.send('https://www.linespolice-cad.com/penal-code');
     
+    // In dev not prod
+    // if (command == 'namedb') nameSearch(message, args);
+    // if (command == 'platedb') plateSearch(message, args);
+    // if (command == 'firearmdb') weaponSearch(message, args);
+    // if (command == 'createbolo') createBolo(message, args);
+    // if (command == 'panic') enablePanic(message);
+
     // Dev Commands (not visible in help)
-    if (command == 'version') return message.channel.send(`**LPS-BOT Version : ${config.version}**`)
+    if (command == 'version') return message.channel.send(`**LPS-BOT Version : PROD-${config.version}**`)
     if (command == 'whatisthemeaningoflife') message.channel.send('42');
   });
 });
