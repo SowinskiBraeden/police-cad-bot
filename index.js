@@ -1,4 +1,4 @@
 const Bot = require('./LPS').Bot;
 
-client = new bot('PRODUCTION', process.env.token);
+client = Bot('PRODUCTION', process.env.token);
 client.main()

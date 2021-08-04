@@ -57,7 +57,7 @@ class Bot {
     });
   }
 
-  async function remoteLogout(message) {
+  async remoteLogout(message) {
     let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
     let dbo = db.db(config.dbo);
     let user = await dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
@@ -244,3 +244,5 @@ class Bot {
     client.login(this.token);
   }
 }
+
+module.exports = {Bot};
