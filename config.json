@@ -2,7 +2,7 @@
 	"defaultPrefix": "?",
 	"token": "ODYwMjk4NjgxMDQ3MDU2NDM0.YN5NlQ.m6lQ76B8b0ftjE6hhpoh1AGlYKU",
 	"botID": "860298681047056434",
-	"mongoURI": "mongodb://localhost/27017",
+	"mongoURI": "mongodb+srv://lps_bot:ktSkHml2BU9EIQ0a@heroku-police-cad-dev.j7aom.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
 	"version": "Beta 0.6.2",
-	"socket": "http://localhost:8080"
+	"socket": "https://police-cad-dev.herokuapp.com/"
 }
