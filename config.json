@@ -1,6 +1,7 @@
 {
 	"defaultPrefix": "?",
-	"token": "ODYwMjk4NjgxMDQ3MDU2NDM0.YN5NlQ.EeoaT9X-Qk8mg26E3vircZkPlus",
+	"token": "ODYwMjk4NjgxMDQ3MDU2NDM0.YN5NlQ.0K2-N3FSlF9sOMaKLURb4OmyCzQ",
 	"botID": "860298681047056434",
-	"mongoURI": "mongodb://localhost/27017"
+	"mongoURI": "mongodb://localhost/27017",
+	"version": "Beta 0.6.2"
 }
