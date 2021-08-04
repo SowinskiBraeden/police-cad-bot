@@ -229,7 +229,7 @@ client.on('message', (message) => {
     // if (command == 'panic') enablePanic(message);
 
     // Dev Commands (not visible in help)
-    if (command == 'version') return message.channel.send(`**LPS-BOT Version : DEV-${config.version}**`)
+    if (command == 'version') return message.channel.send(`**LPS-BOT Version : PROD-${config.version}**`)
     if (command == 'whatisthemeaningoflife') message.channel.send('42');
   });
 });
