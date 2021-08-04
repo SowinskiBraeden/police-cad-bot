@@ -92,8 +92,9 @@ async function checkStatus(message, args) {
 
 async function updateStatus(message, args, prefix) {
   let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80'];
-  getUser(message).then(user => {
+  getUser(message.author.id).then(user => {
     if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You must provide a new status ${message.author} | To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
     if (!validStatus.includes(args[0])) return message.channel.send(`**${args[0]}** is a Invalid Status ${message.author}! To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
     let onDuty=null;
     let updateDuty=false;
@@ -228,7 +229,7 @@ client.on('message', (message) => {
     // if (command == 'panic') enablePanic(message);
 
     // Dev Commands (not visible in help)
-    if (command == 'version') return message.channel.send(`**LPS-BOT Version : PROD-${config.version}**`)
+    if (command == 'version') return message.channel.send(`**LPS-BOT Version : DEV-${config.version}**`)
     if (command == 'whatisthemeaningoflife') message.channel.send('42');
   });
 });
