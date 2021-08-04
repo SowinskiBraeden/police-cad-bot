@@ -10,7 +10,7 @@ async function newPrefix(message, n) {
   if (n[0]==undefined) return message.channel.send(`You must provide a **new prefix** ${message.author}!`);
   if (n[0].length<1) return message.channel.send('Your new prefix must be \`1\` character!')
   let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
-  let dbo = db.db("knoldus");
+  let dbo = db.db(config.dbo);
   dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.prefix":n[0]}},function(err, res) {
     if (err) throw err;
     return message.channel.send(`The new prefix is now **\`${n}\`**`);
@@ -22,7 +22,7 @@ async function remoteLogin(message, args) {
   if (args.length==0) return message.author.send(`You must provide a **email** and **password** ${message.author}!`);
   if (!args[0]==null||!args[0]==undefined&&args[1]==null||args[1]==undefined) return message.author.send(`You must provide a **password** ${message.author}!`);
   let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
-  let dbo = db.db("knoldus");
+  let dbo = db.db(config.dbo);
   let user = await dbo.collection("users").findOne({"user.email":args[0]}).then(user => user);
   if (user==null||user==undefined) return message.author.send(`Cannot find the email **${args[0]}** ${message.author}!`);
   if (user.user.discord) {
@@ -51,7 +51,7 @@ async function remoteLogin(message, args) {
 
 async function remoteLogout(message) {
   let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
-  let dbo = db.db("knoldus");
+  let dbo = db.db(config.dbo);
   let user = await dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
   if (!user) return message.channel.send(`You cannot logout if your not logged in ${message.author}!`);
   dbo.collection("users").updateOne({"user.discord.id":message.author.id},{$unset:{"user.discord":""}},function(err,res) {
@@ -62,7 +62,7 @@ async function remoteLogout(message) {
 
 async function getUser(message) {
   let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
-  let dbo=db.db("knoldus");
+  let dbo = db.db(config.dbo);
   return await dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
 }
 
@@ -116,7 +116,7 @@ async function updateStatus(message, args, prefix) {
 async function getPrefix(message) {
   let prefix;
   let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
-  let dbo = db.db("knoldus");
+  let dbo = db.db(config.dbo);
 
   if (message.channel.type!="dm") {
     let guild = await dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
