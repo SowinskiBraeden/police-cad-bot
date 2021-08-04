@@ -164,7 +164,7 @@ class Bot {
 
     // Basic Commands
     client.on('message', (message) => {
-      getPrefix(message).then(prefix => {
+      this.getPrefix(message).then(prefix => {
         if (!message.content.startsWith(prefix) || message.author.bot) return;
 
         const args = message.content.slice(prefix.length).trim().split(' ');
@@ -216,24 +216,26 @@ class Bot {
         if (command == 'setprefix') {
           if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}!`);
           if(!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
-          newPrefix(message, args);
+          this.newPrefix(message, args);
         }
         // Login
         if (command == 'login') {
           if (message.channel.type=="text") return message.channel.send(`You must direct message me to login ${message.author}!`);
-          remoteLogin(message, args);
+          this.remoteLogin(message, args);
         }
-        if (command == 'logout') remoteLogout(message);
+        if (command == 'logout') this.remoteLogout(message);
         if (command == 'validstatus') return message.channel.send(validStatus);
-        if (command == 'checkstatus') checkStatus(message, args);
-        if (command == 'updatestatus') updateStatus(message, args, prefix);
-        if (command == 'account') account(message);
+        if (command == 'checkstatus') this.checkStatus(message, args);
+        if (command == 'updatestatus') this.updateStatus(message, args, prefix);
+        if (command == 'account') this.account(message);
         if (command == 'penalcodes') return message.channel.send('https://www.linespolice-cad.com/penal-code');
-        if (command == 'namedb') nameSearch(message, args);
-        if (command == 'platedb') plateSearch(message, args);
-        if (command == 'firearmdb') weaponSearch(message, args);
-        if (command == 'createbolo') createBolo(message, args);
-        if (command == 'panic') enablePanic(message);
+        
+        // Disabled for dev
+        // if (command == 'namedb') this.nameSearch(message, args);
+        // if (command == 'platedb') this.plateSearch(message, args);
+        // if (command == 'firearmdb') this.weaponSearch(message, args);
+        // if (command == 'createbolo') this.createBolo(message, args);
+        // if (command == 'panic') this.enablePanic(message);
 
         // Dev Commands (not visible in help)
         if (command == 'version') return message.channel.send(`**LPS-BOT Version : ${this.dev}-${config.version}**`)
