@@ -105,7 +105,7 @@ async function updateStatus(message, args, prefix) {
       onDuty: onDuty,
       updateDuty: updateDuty
     };
-    const socket = io.connect('http://localhost:8080');
+    const socket = io.connect(config.socket);
     socket.emit('bot_update_status', req);
     socket.on('bot_updated_status', (res) => {
         return message.channel.send(`Succesfully updated status to **${args[0]}** ${message.author}!`);
