@@ -1,1 +1,1 @@
-Worker: node LPS.js
+Worker: node index.js
