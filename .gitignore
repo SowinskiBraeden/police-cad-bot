@@ -3,6 +3,3 @@ node_modules/*
 
 # test file
 test.js
-
-# Config
-config.json
