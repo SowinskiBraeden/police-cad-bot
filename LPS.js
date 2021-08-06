@@ -5,21 +5,24 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const config = require('./config');
 
-
 class Bot {
 
   constructor(dev, token) {
     this.dev = dev;
     this.token = token;
+    this.connectMongo()
+  }
+
+  async connectMongo() {
+    this.db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
+    this.dbo = this.db.db(config.dbo);
   }
 
   // Updates Prefix
   async newPrefix(message, n) {
     if (n[0]==undefined) return message.channel.send(`You must provide a **new prefix** ${message.author}!`);
     if (n[0].length<1) return message.channel.send('Your new prefix must be \`1\` character!')
-    let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
-    let dbo = db.db(config.dbo);
-    dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.prefix":n[0]}},function(err, res) {
+    this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.prefix":n[0]}},function(err, res) {
       if (err) throw err;
       return message.channel.send(`The new prefix is now **\`${n}\`**`);
     });
@@ -29,9 +32,7 @@ class Bot {
   async remoteLogin(message, args) {
     if (args.length==0) return message.author.send(`You must provide a **email** and **password** ${message.author}!`);
     if (!args[0]==null||!args[0]==undefined&&args[1]==null||args[1]==undefined) return message.author.send(`You must provide a **password** ${message.author}!`);
-    let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
-    let dbo = db.db(config.dbo);
-    let user = await dbo.collection("users").findOne({"user.email":args[0]}).then(user => user);
+    let user = await this.dbo.collection("users").findOne({"user.email":args[0]}).then(user => user);
     if (user==null||user==undefined) return message.author.send(`Cannot find the email **${args[0]}** ${message.author}!`);
     if (user.user.discord) {
       if (user.user.discord.id==message.author.id) return message.author.send(`You are already logged in ${message.author}!`);
@@ -47,7 +48,7 @@ class Bot {
           username: message.author.username,
           discriminator: message.author.discriminator
         }
-        dbo.collection("users").updateOne({"user.email":args[0]},{$set:{"user.discord": discord}},function(err,res) {
+        this.dbo.collection("users").updateOne({"user.email":args[0]},{$set:{"user.discord": discord}},function(err,res) {
           if (err) throw err;
           return message.author.send(`Logged in as **${user.user.username}** ${message.author}!`);
         });
@@ -58,87 +59,84 @@ class Bot {
   }
 
   async remoteLogout(message) {
-    let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
-    let dbo = db.db(config.dbo);
-    let user = await dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You cannot logout if your not logged in ${message.author}!`);
-    dbo.collection("users").updateOne({"user.discord.id":message.author.id},{$unset:{"user.discord":""}},function(err,res) {
+    this.dbo.collection("users").updateOne({"user.discord.id":message.author.id},{$unset:{"user.discord":""}},function(err,res) {
       if (err) throw err;
       return message.channel.send(`Succesfully logged out ${message.author}!`);
     });
   }
 
-  async getUser(id) {
-    let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
-    let dbo = db.db(config.dbo);
-    return await dbo.collection("users").findOne({"user.discord.id":id}).then(user => user);
+  async account(message) {
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
+    return message.author.send(`${message.author} Logged in as **${user.user.username}**  |  **${user.user.email}**`);
   }
 
-  async account(message) {
-    getUser(message).then(user => {
-      if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
-      return message.author.send(`${message.author} Logged in as **${user.user.username}**  |  **${user.user.email}**`);
-    });
-  }
+  // Disabled for Production
+
+  // async nameSearch(message, args) {
+  //   let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+  //   if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
+  //     if (args.length==0) return message.channel.send(`You must provide a **First Name**, **Last Name** and **DOB**(mm/dd/yyyy) ${message.author}!`);
+  //     if (args.length==1) return message.channel.send(`You're missing a **Last Name** and **DOB**(mm/dd/yyyy) ${message.author}!`);
+  //     if (args.length==2) return message.channel.send(`You're missing a **DOB**(mm/dd/yyyy) ${message.author}!`);
+  //   }
+  //   if (args.length==0) return message.channel.send(`You must provide a **First Name** and **Last Name** ${message.author}!`);
+  //   if (args.length==1) return message.channel.send(`You're missing a **Last Name** ${message.author}!`);
+  //   return message.channel.send('Debug, valid inputs');
+  // }
 
   async checkStatus(message, args) {
     if (args.length==0) {
-      getUser(message.author.id).then(user => {
-        if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
-        return message.channel.send(`${message.author}'s status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
-      });
+      let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+      if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
+      return message.channel.send(`${message.author}'s status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
     } else {
-      getUser(args[0].id).then(user => {
-        if (user==null) return message.channel.send(`Cannot find **${args[0]}** ${message.author}!`);
-        // This lame code to get username without ping on discord
-        let id = args[0].replace('<@!', '').replace('>', '');
-        const User = client.users.cache.get(id);
-        return message.channel.send(`${message.author}, **${User.tag}'s** status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
-      });
+      let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);        if (user==null) return message.channel.send(`Cannot find **${args[0]}** ${message.author}!`);
+      // This lame line of code to get username without ping on discord
+      const User = client.users.cache.get(args[0].replace('<@!', '').replace('>', ''));
+      return message.channel.send(`${message.author}, **${User.tag}'s** status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
     }
   }
 
   async updateStatus(message, args, prefix) {
     let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80'];
-    getUser(message.author.id).then(user => {
-      if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
-      if (args.length==0) return message.channel.send(`You must provide a new status ${message.author} | To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
-      if (!validStatus.includes(args[0])) return message.channel.send(`**${args[0]}** is a Invalid Status ${message.author}! To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
-      let onDuty=null;
-      let updateDuty=false;
-      let status = args[0]
-      if (args[0]=='10-41') {
-        onDuty=true;
-        updateDuty=true;
-        status='Online';
-      }
-      if (args[0]=='10-42') {
-        onDuty=false;
-        updateDuty=true;
-        status='Offline';
-      }
-      req={
-        userID: user._id,
-        status: status,
-        setBy: 'Self',
-        onDuty: onDuty,
-        updateDuty: updateDuty
-      };
-      const socket = io.connect(config.socket);
-      socket.emit('bot_update_status', req);
-      socket.on('bot_updated_status', (res) => {
-          return message.channel.send(`Succesfully updated status to **${args[0]}** ${message.author}!`);
-      });
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You must provide a new status ${message.author} | To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
+    if (!validStatus.includes(args[0])) return message.channel.send(`**${args[0]}** is a Invalid Status ${message.author}! To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
+    let onDuty=null;
+    let updateDuty=false;
+    let status = args[0]
+    if (args[0]=='10-41') {
+      onDuty=true;
+      updateDuty=true;
+      status='Online';
+    }
+    if (args[0]=='10-42') {
+      onDuty=false;
+      updateDuty=true;
+      status='Offline';
+    }
+    req={
+      userID: user._id,
+      status: status,
+      setBy: 'Self',
+      onDuty: onDuty,
+      updateDuty: updateDuty
+    };
+    const socket = io.connect(config.socket);
+    socket.emit('bot_update_status', req);
+    socket.on('bot_updated_status', (res) => {
+        return message.channel.send(`Succesfully updated status to **${args[0]}** ${message.author}!`);
     });
   }
 
   async getPrefix(message) {
     let prefix;
-    let db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
-    let dbo = db.db(config.dbo);
-
     if (message.channel.type!="dm") {
-      let guild = await dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+      let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
 
       // If not prefix, generate server default
       if (!guild) {
@@ -148,7 +146,7 @@ class Bot {
             prefix: config.defaultPrefix
           }
         }
-        dbo.collection("prefixes").insertOne(newGuild, function(err, res) {
+        this.dbo.collection("prefixes").insertOne(newGuild, function(err, res) {
           if (err) throw err;
         });
         prefix = newGuild.server.serverID;
@@ -229,9 +227,9 @@ class Bot {
         if (command == 'updatestatus') this.updateStatus(message, args, prefix);
         if (command == 'account') this.account(message);
         if (command == 'penalcodes') return message.channel.send('https://www.linespolice-cad.com/penal-code');
-        
+        if (command == 'namedb') this.nameSearch(message, args);
+
         // Disabled for dev
-        // if (command == 'namedb') this.nameSearch(message, args);
         // if (command == 'platedb') this.plateSearch(message, args);
         // if (command == 'firearmdb') this.weaponSearch(message, args);
         // if (command == 'createbolo') this.createBolo(message, args);
