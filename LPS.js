@@ -3,19 +3,21 @@ const io = require('socket.io-client');
 const bcrypt = require('bcrypt');
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const config = require('./config');
 
 class Bot {
 
-  constructor(dev, token) {
+  constructor(dev, token, config) {
     this.dev = dev;
     this.token = token;
-    this.connectMongo()
+    this.config = require(config);
+    this.connectMongo();
+
+    this.socket = io.connect(this.config.socket);
   }
 
   async connectMongo() {
-    this.db = await MongoClient.connect(config.mongoURI,{useUnifiedTopology:true});
-    this.dbo = this.db.db(config.dbo);
+    this.db = await MongoClient.connect(this.config.mongoURI,{useUnifiedTopology:true});
+    this.dbo = this.db.db(this.config.dbo);
   }
 
   // Updates Prefix
@@ -73,19 +75,103 @@ class Bot {
     return message.author.send(`${message.author} Logged in as **${user.user.username}**  |  **${user.user.email}**`);
   }
 
-  // Disabled for Production
+  async nameSearch(message, args) {
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    let data;
+    if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
+      if (args.length==0) return message.channel.send(`You must provide a **First Name**, **Last Name** and **DOB**(mm/dd/yyyy) ${message.author}!`);
+      if (args.length==1) return message.channel.send(`You're missing a **Last Name** and **DOB**(mm/dd/yyyy) ${message.author}!`);
+      if (args.length==2) return message.channel.send(`You're missing a **DOB**(mm/dd/yyyy) ${message.author}!`);
+    }
+    if (args.length==0) return message.channel.send(`You must provide a **First Name** and **Last Name** ${message.author}!`);
+    if (args.length==1) return message.channel.send(`You're missing a **Last Name** ${message.author}!`);
 
-  // async nameSearch(message, args) {
-  //   let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-  //   if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
-  //     if (args.length==0) return message.channel.send(`You must provide a **First Name**, **Last Name** and **DOB**(mm/dd/yyyy) ${message.author}!`);
-  //     if (args.length==1) return message.channel.send(`You're missing a **Last Name** and **DOB**(mm/dd/yyyy) ${message.author}!`);
-  //     if (args.length==2) return message.channel.send(`You're missing a **DOB**(mm/dd/yyyy) ${message.author}!`);
-  //   }
-  //   if (args.length==0) return message.channel.send(`You must provide a **First Name** and **Last Name** ${message.author}!`);
-  //   if (args.length==1) return message.channel.send(`You're missing a **Last Name** ${message.author}!`);
-  //   return message.channel.send('Debug, valid inputs');
-  // }
+    if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
+      data = {
+        user: user,
+        query: {
+          firstName: args[0],
+          lastName: args[1],
+          dateOfBirth: args[2],
+          activeCommunityID: user.user.activeCommunity
+        }
+      }
+    } else {
+      data = {
+        user: user,
+        query: {
+          firstName: args[0],
+          lastName: args[1],
+          activeCommunityID: user.user.activeCommunity
+        }
+      }
+    }
+
+    this.socket.emit("bot_name_search", data);
+    this.socket.on("bot_name_search_results", results => {
+
+      if (results.civilians.length == 0) {
+        return message.channel.send(`Name **${args[0]} ${args[1]}** not found ${message.author}`);
+      }
+
+      for (let i = 0; i < results.civilians.length; i++) {
+        // Get Drivers Licence Status
+        let licenceStatus;
+        if (results.civilians[i].civilian.licenseStatus == 1) licenceStatus = 'Valid';
+        if (results.civilians[i].civilian.licenceStatus == 2) licenceStatus = 'Revoked';
+        if (results.civilians[i].civilian.licenceStatus == 3) licenceStatus = 'None';
+        // Get Firearm Licence Status
+        let firearmLicence = results.civilians[i].civilian.firearmLicense;
+        if (firearmLicence == undefined || firearmLicence == null) firearmLicence = 'None';
+        if (firearmLicence == '2') firearmLicence = 'Valid';
+        if (firearmLicence == '3') firearmLicence = 'Revoked';
+        let nameResult = new Discord.MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle(`**${results.civilians[i].civilian.firstName} ${results.civilians[i].civilian.lastName} | ${results.civilians[i]._id}**`)
+        .setURL('https://discord.gg/jgUW656v2t')
+        .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+        .setDescription('Name Search Results')
+        .addFields(
+          { name: `**First Name**`, value: `**${results.civilians[i].civilian.firstName}**`, inline: true },
+          { name: `**Last Name**`, value: `**${results.civilians[i].civilian.lastName}**`, inline: true },
+          { name: `**DOB**`, value: `**${results.civilians[i].civilian.birthday}**`, inline: true },
+          { name: `**Drivers License**`, value: `**${licenceStatus}**`, inline: true },
+          { name: `**Firearm Licence**`, value: `**${firearmLicence}**`, inline: true },
+          { name: `**Gender**`, value: `**${results.civilians[i].civilian.gender}**`, inline: true }
+        )
+        // Check Other details
+        let address = results.civilians[i].civilian.address;
+        let occupation = results.civilians[i].civilian.occupation;
+        let height = results.civilians[i].civilian.height;
+        let weight = results.civilians[i].civilian.weight;
+        let eyeColor = results.civilians[i].civilian.eyeColor;
+        let hairColor = results.civilians[i].civilian.hairColor;
+        if (address != null && address != undefined && address != '') nameResult.addFields({ name: `**Address**`, value: `**${address}**`, inline: true });
+        if (occupation != null && occupation != undefined && occupation != '') nameResult.addFields({ name: `**Occupation**`, value: `**${occupation}**`, inline: true });
+        if (height!=null&&height!=undefined&&height!="NaN"&&height!='') {
+          if (results.civilians[i].civilian.heightClassification=='imperial') {
+            let ft = Math.floor(height/12);
+            let inch = height%12;
+            nameResult.addFields({ name: '**Height**', value: `**${ft}'${inch}"**`, inline: true });
+          } else {
+            nameResult.addFields({ name: '**Height**', value: `**${height}cm**`, inline: true });
+          }
+        }
+        if (weight!=null&&weight!=undefined&&weight!='') {
+          if (results.civilians[i].civilian.weightClassification=='imperial') {
+            nameResult.addFields({ name: '**Weight**', value: `**${weight}lbs.**`, inline: true });
+          } else {
+            nameResult.addFields({ name: '**Weight**', value: `**${weight}kgs.**`, inline: true });
+          } 
+        }
+        if (eyeColor!=null&&eyeColor!=undefined&&eyeColor!='') nameResult.addFields({name:'**Eye Color**',value:`**${eyeColor}**`,inline:true});
+        if (hairColor!=null&&hairColor!=undefined&&hairColor!='') nameResult.addFields({name:'**Hair Color**',value:`**${hairColor}**`,inline:true});
+        nameResult.addFields({name:'**Organ Donor**',value:`**${results.civilians[i].civilian.organDonor}**`,inline:true});
+        nameResult.addFields({name:'**Veteran**',value:`**${results.civilians[i].civilian.veteran}**`,inline:true});
+        message.channel.send(nameResult);
+      }
+    });
+  }
 
   async checkStatus(message, args) {
     if (args.length==0) {
@@ -119,16 +205,15 @@ class Bot {
       updateDuty=true;
       status='Offline';
     }
-    req={
+    let req={
       userID: user._id,
       status: status,
       setBy: 'Self',
       onDuty: onDuty,
       updateDuty: updateDuty
     };
-    const socket = io.connect(config.socket);
-    socket.emit('bot_update_status', req);
-    socket.on('bot_updated_status', (res) => {
+    this.socket.emit('bot_update_status', req);
+    this.socket.on('bot_updated_status', (res) => {
         return message.channel.send(`Succesfully updated status to **${args[0]}** ${message.author}!`);
     });
   }
@@ -143,7 +228,7 @@ class Bot {
         let newGuild = {
           server: {
             serverID: message.guild.id,
-            prefix: config.defaultPrefix
+            prefix: this.config.defaultPrefix
           }
         }
         this.dbo.collection("prefixes").insertOne(newGuild, function(err, res) {
@@ -151,7 +236,7 @@ class Bot {
         });
         prefix = newGuild.server.serverID;
       } else prefix = guild.server.prefix;
-    } else prefix = config.defaultPrefix;
+    } else prefix = this.config.defaultPrefix;
     return prefix
   }
 
@@ -218,7 +303,9 @@ class Bot {
         }
         // Login
         if (command == 'login') {
-          if (message.channel.type=="text") return message.channel.send(`You must direct message me to login ${message.author}!`);
+          // if(this.isLoggedIn) return message.author.send(`http://localhost:8080/connect-discord?id=${message.author.id}`);
+          // else if(!this.isLoggedIn) return message.author.send('You are already logged in');
+          if (message.channel.type=="text") return message.channel.send(`You must direct message me to use this command ${message.author}!`);
           this.remoteLogin(message, args);
         }
         if (command == 'logout') this.remoteLogout(message);
@@ -236,8 +323,12 @@ class Bot {
         // if (command == 'panic') this.enablePanic(message);
 
         // Dev Commands (not visible in help)
-        if (command == 'version') return message.channel.send(`**LPS-BOT Version : ${this.dev}-${config.version}**`)
+        if (command == 'version') return message.channel.send(`**LPS-BOT Version : ${this.dev}-${this.config.version}**`)
         if (command == 'whatisthemeaningoflife') message.channel.send('42');
+        if (command == 'pingserver') {
+          this.socket.emit('botping', {message:'hello there'});
+          this.socket.on('botpong', (data)=>{console.log(data)});
+        }
       });
     });
     
