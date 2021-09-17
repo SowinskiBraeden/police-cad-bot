@@ -185,7 +185,6 @@ class Bot {
     }
     this.socket.emit('bot_plate_search', data);
     this.socket.on('bot_plate_search_results', results => {
-      console.log(results);
       
       if (results.vehicles.length == 0) {
         return message.channel.send(`Plate Number **${args[0]}** not found ${message.author}`);
