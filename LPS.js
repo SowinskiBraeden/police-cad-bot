@@ -173,6 +173,53 @@ class Bot {
     });
   }
 
+  async plateSearch(message, args) {
+    if (args.length==0) return message.channel.send(`You are missing a **Plate #** ${message.author}`);
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    let data = {
+      user: user,
+      query: {
+        plateNumber: args[0],
+        activeCommunityID: user.user.activeCommunity
+      }
+    }
+    this.socket.emit('bot_plate_search', data);
+    this.socket.on('bot_plate_search_results', results => {
+      console.log(results);
+      
+      if (results.vehicles.length == 0) {
+        return message.channel.send(`Plate Number **${args[0]}** not found ${message.author}`);
+      }
+
+      for (let i = 0; i < results.vehicles.length; i++) {
+        let plateResult = new Discord.MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle(`**${results.vehicles[i].plate} | ${results.vehicles[i]._id}**`)
+        .setURL('https://discord.gg/jgUW656v2t')
+        .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+        .setDescription('Plate Search Results')
+        .addFields(
+          { name: `**Plate #**`, value: `**${results.vehicles[i].vehicle.plate}**`, inline: true },
+          { name: `**Vin #**`, value: `**${results.vehicles[i].vehicle.vin}**`, inline: true },
+          { name: `**Model**`, value: `**${results.vehicles[i].vehicle.model}**`, inline: true },
+          { name: `**Color**`, value: `**${results.vehicles[i].vehicle.color}**`, inline: true },
+          { name: `**Owner**`, value: `**${results.vehicles[i].vehicle.registeredOwner}**`, inline: true },
+        )
+        // Other details
+        let validRegistration = results.vehicles[i].vehicle.validRegistration;
+        let validInsurance = results.vehicles[i].vehicle.validInsurance;
+        let stolen = results.vehicles[i].vehicle.isStolen;
+        if (validRegistration=='1') plateResult.addFields({ name: `**Registration**`, value: `**Valid**`, inline: true });
+        if (validRegistration=='2') plateResult.addFields({ name: `**Registration**`, value: `**InValid**`, inline: true });
+        if (validInsurance=='1') plateResult.addFields({ name: `**Insurance**`, value: `**Valid**`, inline: true });
+        if (validInsurance=='2') plateResult.addFields({ name: `**Insurance**`, value: `**InValid**`, inline: true });
+        if (stolen=='1') plateResult.addFields({ name: `**Stolen**`, value: `**No**`, inline: true });
+        if (stolen=='2') plateResult.addFields({ name: `**Stolen**`, value: `**Yes**`, inline: true });
+        message.channel.send(plateResult);
+      }
+    });
+  }
+
   async checkStatus(message, args) {
     if (args.length==0) {
       let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
@@ -315,9 +362,9 @@ class Bot {
         if (command == 'account') this.account(message);
         if (command == 'penalcodes') return message.channel.send('https://www.linespolice-cad.com/penal-code');
         if (command == 'namedb') this.nameSearch(message, args);
+        if (command == 'platedb') this.plateSearch(message, args);
 
         // Disabled for dev
-        // if (command == 'platedb') this.plateSearch(message, args);
         // if (command == 'firearmdb') this.weaponSearch(message, args);
         // if (command == 'createbolo') this.createBolo(message, args);
         // if (command == 'panic') this.enablePanic(message);
