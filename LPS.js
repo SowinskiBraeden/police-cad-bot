@@ -194,7 +194,7 @@ class Bot {
       for (let i = 0; i < results.vehicles.length; i++) {
         let plateResult = new Discord.MessageEmbed()
         .setColor('#0099ff')
-        .setTitle(`**${results.vehicles[i].plate} | ${results.vehicles[i]._id}**`)
+        .setTitle(`**${results.vehicles[i].vehicle.plate} | ${results.vehicles[i]._id}**`)
         .setURL('https://discord.gg/jgUW656v2t')
         .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
         .setDescription('Plate Search Results')
