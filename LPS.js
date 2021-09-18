@@ -77,6 +77,7 @@ class Bot {
 
   async nameSearch(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
     let data;
     if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
       if (args.length==0) return message.channel.send(`You must provide a **First Name**, **Last Name** and **DOB**(mm/dd/yyyy) ${message.author}!`);
@@ -174,8 +175,9 @@ class Bot {
   }
 
   async plateSearch(message, args) {
-    if (args.length==0) return message.channel.send(`You are missing a **Plate #** ${message.author}`);
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You are missing a **Plate #** ${message.author}`);
     let data = {
       user: user,
       query: {
@@ -222,10 +224,11 @@ class Bot {
   async checkStatus(message, args) {
     if (args.length==0) {
       let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-      if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
+      if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
       return message.channel.send(`${message.author}'s status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
     } else {
-      let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);        if (user==null) return message.channel.send(`Cannot find **${args[0]}** ${message.author}!`);
+      let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+      if (!user) return message.channel.send(`Cannot find **${args[0]}** ${message.author}!`);
       // This lame line of code to get username without ping on discord
       const User = client.users.cache.get(args[0].replace('<@!', '').replace('>', ''));
       return message.channel.send(`${message.author}, **${User.tag}'s** status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
@@ -235,7 +238,7 @@ class Bot {
   async updateStatus(message, args, prefix) {
     let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80'];
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
     if (args.length==0) return message.channel.send(`You must provide a new status ${message.author} | To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
     if (!validStatus.includes(args[0])) return message.channel.send(`**${args[0]}** is a Invalid Status ${message.author}! To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
     let onDuty=null;
