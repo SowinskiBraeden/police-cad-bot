@@ -225,19 +225,45 @@ class Bot {
     });
   }
 
-  // In Dev
-  // async firearmSeach(message, args) {
-  //   let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-  //   if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
-  //   if (args.length==0) return message.channel.send(`You are missing a **Serial Number** ${message.author}`);
-  //   let data = {
-  //     user: user,
-  //     query: {
-  //       serialNumber: args[0],
-  //       activeCommunityID: user.user.activeCommunity
-  //     }
-  //   }
-  // }
+  async firearmSearch(message, args) {
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You are missing a **Serial Number** ${message.author}`);
+    let data = {
+      user: user,
+      query: {
+        serialNumber: args[0],
+        activeCommunityID: user.user.activeCommunity
+      }
+    }
+    this.socket.emit('bot_firearm_search', data);
+    this.socket.on('bot_firearm_search_results', results => {
+      if (results.user._id==user._id) {
+        if (results.firearms.length==0) {
+          return message.channel.send(`No Firearms found ${message.author}`);
+        }
+
+        for (let i = 0; i < results.firearms.length; i++) {
+          let firearmResult = new Discord.MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle(`**${results.firearms[i].firearm.serialNumber} | ${results.firearms[i]._id}**`)
+          .setURL('https://discord.gg/jgUW656v2t')
+          .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+          .setDescription('Firearm Search Results')
+          .addFields(
+            { name: `**Serial Number**`, value: `**${results.firearms[i].firearm.serialNumber}**`, inline: true },
+            { name: `**Type**`, value: `**${results.firearms[i].firearm.weaponType}**`, inline: true },
+            { name: `**Owner**`, value: `**${results.firearms[i].firearm.registeredOwner}**`, inline: true },
+          )
+          // Other details
+          let isStolen = results.firearms[i].firearm.isStolen;
+          if (isStolen=="false"||isStolen==false) firearmResult.addFields({name:`**Stolen**`,value:'**No**',inline: true});
+          if (isStolen=="true"||isStolen==true) firearmResult.addFields({name:`**Stolen**`,value:'**Yes**',inline: true});
+          message.channel.send(firearmResult);
+        }
+      }
+    });
+  }
 
   async checkStatus(message, args) {
     if (args.length==0) {
@@ -383,9 +409,9 @@ class Bot {
         if (command == 'penalcodes') return message.channel.send('https://www.linespolice-cad.com/penal-code');
         if (command == 'namedb') this.nameSearch(message, args);
         if (command == 'platedb') this.plateSearch(message, args);
+        if (command == 'firearmdb') this.firearmSearch(message, args);
 
         // Disabled for dev
-        // if (command == 'firearmdb') this.weaponSearch(message, args);
         // if (command == 'createbolo') this.createBolo(message, args);
         // if (command == 'panic') this.enablePanic(message);
 
