@@ -2,7 +2,7 @@
 	"defaultPrefix": "?",
 	"botID": "860298681047056434",
 	"mongoURI": "mongodb+srv://lps_bot:ktSkHml2BU9EIQ0a@heroku-police-cad-dev.j7aom.mongodb.net/heroku_8pc4g86l?retryWrites=true&w=majority",
-	"version": "Beta 1.5.0",
+	"version": "Beta 1.6.1",
 	"socket": "http://localhost:8080",
 	"dbo": "heroku_8pc4g86l"
 }
