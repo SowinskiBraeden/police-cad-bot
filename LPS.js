@@ -26,7 +26,7 @@ class Bot {
     if (n[0].length<1) return message.channel.send('Your new prefix must be \`1\` character!')
     this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.prefix":n[0]}},function(err, res) {
       if (err) throw err;
-      return message.channel.send(`The new prefix is now **\`${n}\`**`);
+      message.channel.send(`The new prefix is now **\`${n}\`**`);
     });
   }
 
@@ -65,14 +65,14 @@ class Bot {
     if (!user) return message.channel.send(`You cannot logout if your not logged in ${message.author}!`);
     this.dbo.collection("users").updateOne({"user.discord.id":message.author.id},{$unset:{"user.discord":""}},function(err,res) {
       if (err) throw err;
-      return message.channel.send(`Succesfully logged out ${message.author}!`);
+      message.channel.send(`Succesfully logged out ${message.author}!`);
     });
   }
 
   async account(message) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
-    return message.author.send(`${message.author} Logged in as **${user.user.username}**  |  **${user.user.email}**`);
+    message.author.send(`${message.author} Logged in as **${user.user.username}**  |  **${user.user.email}**`);
   }
 
   async nameSearch(message, args) {
@@ -269,18 +269,18 @@ class Bot {
     if (args.length==0) {
       let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
       if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
-      return message.channel.send(`${message.author}'s status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
+      message.channel.send(`${message.author}'s status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
     } else {
       let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
       if (!user) return message.channel.send(`Cannot find **${args[0]}** ${message.author}!`);
       // This lame line of code to get username without ping on discord
       const User = client.users.cache.get(args[0].replace('<@!', '').replace('>', ''));
-      return message.channel.send(`${message.author}, **${User.tag}'s** status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
+      message.channel.send(`${message.author}, **${User.tag}'s** status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
     }
   }
 
   async updateStatus(message, args, prefix) {
-    let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80'];
+    let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80', 'Panic'];
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
     if (args.length==0) return message.channel.send(`You must provide a new status ${message.author} | To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
@@ -307,8 +307,26 @@ class Bot {
     };
     this.socket.emit('bot_update_status', req);
     this.socket.on('bot_updated_status', (res) => {
-        return message.channel.send(`Succesfully updated status to **${args[0]}** ${message.author}!`);
+        message.channel.send(`Succesfully updated status to **${args[0]}** ${message.author}!`);
     });
+  }
+
+  async enablePanic(message) {
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    // If panic isn't enabled, enable panic
+    if (user.user.dispatchStatus!='Panic') {
+      this.updateStatus(message, ['Panic'], null);
+      let myReq = {
+        userID: user._id,
+        userUsername: user.user.username,
+        activeCommunity: user.user.activeCommunity
+      }
+      this.socket.emit('panic_button_update', myReq);
+    // If panic is enabled, set status to Online (panic off)
+    } else if (user.user.dispatchStatus=='Panic') {
+      this.updateStatus(message, ['10-41'], null);
+    }
   }
 
   async getPrefix(message) {
@@ -385,7 +403,12 @@ class Bot {
             { name: `**${prefix}checkStatus** <user>`, value: 'Leave user blank to check own status', inline: true },
             { name: `**${prefix}updateStatus** <status>`, value: 'Updates your status', inline: true },
             { name: `**${prefix}account**`, value: 'returns logged in account', inline: true },
-            { name: `**${prefix}penalCodes**`, value: 'Provides Link to penal codes', inline: true }      )
+            { name: `**${prefix}penalCodes**`, value: 'Provides Link to penal codes', inline: true },
+            { name: `**${prefix}namedb <firstName> <lastName> <dob>`, value: 'Searches in your community for name (dob only required if not in a community)', inline: true },
+            { name: `**${prefix}platedb <licence plate #>`, value: 'Searches in your community for Vehicles with the given Licence plate #', inline: true },
+            { name: `**${prefix}firearmdb <Serial #>`, value: 'Searches for Firearms with the given Serial #', inline: true },
+            { name: `**${prefix}panic`, value: 'Enables or disables your panic button', inline: true }
+          )
 
         if (command == 'ping') message.channel.send('Pong!');
         if (command == 'help') message.channel.send(help);
@@ -396,13 +419,11 @@ class Bot {
         }
         // Login
         if (command == 'login') {
-          // if(this.isLoggedIn) return message.author.send(`http://localhost:8080/connect-discord?id=${message.author.id}`);
-          // else if(!this.isLoggedIn) return message.author.send('You are already logged in');
           if (message.channel.type=="text") return message.channel.send(`You must direct message me to use this command ${message.author}!`);
           this.remoteLogin(message, args);
         }
         if (command == 'logout') this.remoteLogout(message);
-        if (command == 'validstatus') return message.channel.send(validStatus);
+        if (command == 'validstatus') message.channel.send(validStatus);
         if (command == 'checkstatus') this.checkStatus(message, args);
         if (command == 'updatestatus') this.updateStatus(message, args, prefix);
         if (command == 'account') this.account(message);
@@ -410,13 +431,13 @@ class Bot {
         if (command == 'namedb') this.nameSearch(message, args);
         if (command == 'platedb') this.plateSearch(message, args);
         if (command == 'firearmdb') this.firearmSearch(message, args);
+        if (command == 'panic') this.enablePanic(message);
 
         // Disabled for dev
         // if (command == 'createbolo') this.createBolo(message, args);
-        // if (command == 'panic') this.enablePanic(message);
 
         // Dev Commands (not visible in help)
-        if (command == 'version') return message.channel.send(`**LPS-BOT Version : ${this.dev}-${this.config.version}**`)
+        if (command == 'version') message.channel.send(`**LPS-BOT Version : ${this.dev}-${this.config.version}**`)
         if (command == 'whatisthemeaningoflife') message.channel.send('42');
         if (command == 'pingserver') {
           this.socket.emit('botping', {message:'hello there'});
