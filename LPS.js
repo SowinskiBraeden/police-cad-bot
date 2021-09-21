@@ -11,8 +11,6 @@ class Bot {
     this.token = token;
     this.config = require(config);
     this.connectMongo();
-
-    this.socket = io.connect(this.config.socket);
   }
 
   async connectMongo() {
@@ -108,8 +106,9 @@ class Bot {
       }
     }
 
-    this.socket.emit("bot_name_search", data);
-    this.socket.on("bot_name_search_results", results => {
+    const socket = io.connect(this.config.socket);
+    socket.emit("bot_name_search", data);
+    socket.on("bot_name_search_results", results => {
 
       if (results.user._id==user._id) {
         if (results.civilians.length == 0) {
@@ -173,6 +172,7 @@ class Bot {
           message.channel.send(nameResult);
         }
       }
+      socket.disconnect();
     });
   }
 
@@ -187,8 +187,9 @@ class Bot {
         activeCommunityID: user.user.activeCommunity
       }
     }
-    this.socket.emit('bot_plate_search', data);
-    this.socket.on('bot_plate_search_results', results => {
+    const socket = io.connect(this.config.socket);
+    socket.emit('bot_plate_search', data);
+    socket.on('bot_plate_search_results', results => {
       
       if (results.user._id==user._id) {
         if (results.vehicles.length == 0) {
@@ -222,6 +223,7 @@ class Bot {
           message.channel.send(plateResult);
         }
       }
+      socket.disconnect();
     });
   }
 
@@ -236,8 +238,9 @@ class Bot {
         activeCommunityID: user.user.activeCommunity
       }
     }
-    this.socket.emit('bot_firearm_search', data);
-    this.socket.on('bot_firearm_search_results', results => {
+    const socket = io.connect(this.config.socket);
+    socket.emit('bot_firearm_search', data);
+    socket.on('bot_firearm_search_results', results => {
       if (results.user._id==user._id) {
         if (results.firearms.length==0) {
           return message.channel.send(`No Firearms found ${message.author}`);
@@ -262,6 +265,7 @@ class Bot {
           message.channel.send(firearmResult);
         }
       }
+      socket.disconnect();
     });
   }
 
@@ -305,9 +309,11 @@ class Bot {
       onDuty: onDuty,
       updateDuty: updateDuty
     };
-    this.socket.emit('bot_update_status', req);
-    this.socket.on('bot_updated_status', (res) => {
+    const socket = io.connect(this.config.socket);
+    socket.emit('bot_update_status', req);
+    socket.on('bot_updated_status', (res) => {
         message.channel.send(`Succesfully updated status to **${args[0]}** ${message.author}!`);
+        socket.disconnect();
     });
   }
 
@@ -322,7 +328,9 @@ class Bot {
         userUsername: user.user.username,
         activeCommunity: user.user.activeCommunity
       }
-      this.socket.emit('panic_button_update', myReq);
+      const socket = io.connect(this.config.socket);
+      socket.emit('panic_button_update', myReq);
+      socket.disconnect();
     // If panic is enabled, set status to Online (panic off)
     } else if (user.user.dispatchStatus=='Panic') {
       this.updateStatus(message, ['10-41'], null);
