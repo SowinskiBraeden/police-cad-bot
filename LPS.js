@@ -422,7 +422,7 @@ class Bot {
           .setColor('#0099ff')
           .setTitle('**Commands:**')
           .setURL('https://discord.gg/jgUW656v2t')
-          .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+          .setAuthor('LPS Website & Bot Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
           .setDescription('Lines Police CAD Bot Commands')
           .addFields(
             { name: `**${prefix}help**`, value: 'Displays this help page', inline: true },
