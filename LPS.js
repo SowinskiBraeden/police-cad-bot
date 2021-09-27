@@ -6,16 +6,16 @@ const client = new Discord.Client();
 
 class Bot {
 
-  constructor(dev, token, config) {
+  constructor(dev, token, config, mongoURI, dbo) {
     this.dev = dev;
     this.token = token;
     this.config = require(config);
-    this.connectMongo();
+    this.connectMongo(mongoURI, dbo);
   }
 
-  async connectMongo() {
-    this.db = await MongoClient.connect(this.config.mongoURI,{useUnifiedTopology:true});
-    this.dbo = this.db.db(this.config.dbo);
+  async connectMongo(mongoURI, dbo) {
+    this.db = await MongoClient.connect(mongoURI,{useUnifiedTopology:true});
+    this.dbo = this.db.db(dbo);
   }
 
   // Updates Prefix
