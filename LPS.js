@@ -284,7 +284,7 @@ class Bot {
   }
 
   async updateStatus(message, args, prefix) {
-    let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80', 'Panic'];
+    let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80', 'Panic', '10-41', '10-42'];
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
     if (args.length==0) return message.channel.send(`You must provide a new status ${message.author} | To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
@@ -329,11 +329,27 @@ class Bot {
         activeCommunity: user.user.activeCommunity
       }
       const socket = io.connect(this.config.socket);
+      socket.emit('botping');
       socket.emit('panic_button_update', myReq);
-      socket.disconnect();
+      message.channel.send(`Enabled Panic ${message.author}!`);
     // If panic is enabled, set status to Online (panic off)
     } else if (user.user.dispatchStatus=='Panic') {
-      this.updateStatus(message, ['10-41'], null);
+      let myReq = {
+        userID: user._id,
+        communityID: user.user.activeCommunity
+      };
+      const socket = io.connect(this.config.socket);
+      socket.emit('clear_panic', myReq);
+
+      let myUpdateReq = {
+        userID: user._id,
+        status: '10-8',
+        setBy: 'System',
+        onDuty: null,
+        updateDuty: false
+      };
+      socket.emit('update_status', myUpdateReq);
+      message.channel.send(`Disabled Panic ${message.author} and set status to 10-8.`);
     }
   }
 
@@ -412,10 +428,10 @@ class Bot {
             { name: `**${prefix}updateStatus** <status>`, value: 'Updates your status', inline: true },
             { name: `**${prefix}account**`, value: 'returns logged in account', inline: true },
             { name: `**${prefix}penalCodes**`, value: 'Provides Link to penal codes', inline: true },
-            { name: `**${prefix}namedb <firstName> <lastName> <dob>`, value: 'Searches in your community for name (dob only required if not in a community)', inline: true },
-            { name: `**${prefix}platedb <licence plate #>`, value: 'Searches in your community for Vehicles with the given Licence plate #', inline: true },
-            { name: `**${prefix}firearmdb <Serial #>`, value: 'Searches for Firearms with the given Serial #', inline: true },
-            { name: `**${prefix}panic`, value: 'Enables or disables your panic button', inline: true }
+            { name: `**${prefix}namedb <firstName> <lastName> <dob>**`, value: 'Searches in your community for name (dob only required if not in a community)', inline: true },
+            { name: `**${prefix}platedb <licence plate #>**`, value: 'Searches in your community for Vehicles with the given Licence plate #', inline: true },
+            { name: `**${prefix}firearmdb <Serial #>**`, value: 'Searches for Firearms with the given Serial #', inline: true },
+            { name: `**${prefix}panic**`, value: 'Enables or disables your panic button', inline: true }
           )
 
         if (command == 'ping') message.channel.send('Pong!');
@@ -448,8 +464,12 @@ class Bot {
         if (command == 'version') message.channel.send(`**LPS-BOT Version : ${this.dev}-${this.config.version}**`)
         if (command == 'whatisthemeaningoflife') message.channel.send('42');
         if (command == 'pingserver') {
-          this.socket.emit('botping', {message:'hello there'});
-          this.socket.on('botpong', (data)=>{console.log(data)});
+          const socket = io.connect(this.config.socket);
+          socket.emit('botping', {message:'hello there'});
+          socket.on('botpong', (data) => {
+            console.log(data);
+            socket.disconnect();
+          });
         }
       });
     });
