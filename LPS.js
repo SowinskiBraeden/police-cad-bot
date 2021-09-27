@@ -1,6 +1,6 @@
 const MongoClient = require('mongodb').MongoClient;
+const randomstring = require('randomstring');
 const io = require('socket.io-client');
-const bcrypt = require('bcrypt');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
@@ -30,32 +30,39 @@ class Bot {
 
   // Remote Login
   async remoteLogin(message, args) {
-    if (args.length==0) return message.author.send(`You must provide a **email** and **password** ${message.author}!`);
-    if (!args[0]==null||!args[0]==undefined&&args[1]==null||args[1]==undefined) return message.author.send(`You must provide a **password** ${message.author}!`);
-    let user = await this.dbo.collection("users").findOne({"user.email":args[0]}).then(user => user);
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (user) return message.author.send(`You are already logged in ${message.author}! Use \`?logout\` to logout or \`?account\` to see your logged in account.`);
+    if (args.length==0) return message.author.send(`You must provide a **email** and **login token** ${message.author}!`);
+    if (!args[0]==null||!args[0]==undefined&&args[1]==null||args[1]==undefined) return message.author.send(`You must provide a **login token** ${message.author}!`);
+    user = await this.dbo.collection("users").findOne({"user.email":args[0]}).then(user => user);
     if (user==null||user==undefined) return message.author.send(`Cannot find the email **${args[0]}** ${message.author}!`);
-    if (user.user.discord) {
-      if (user.user.discord.id==message.author.id) return message.author.send(`You are already logged in ${message.author}!`);
-    }
-
-    // Match Password
-    bcrypt.compare(args[1], user.user.password, (err, isMatch) => {
-      if (err) throw err;
-      if (isMatch) {
-        // Modify user to include user.user.discord
-        let discord = {
-          id: message.author.id,
-          username: message.author.username,
-          discriminator: message.author.discriminator
-        }
-        this.dbo.collection("users").updateOne({"user.email":args[0]},{$set:{"user.discord": discord}},function(err,res) {
+    
+    // Check discord Login Token
+    if (args[1]==user.user.discordLoginToken) {
+      // Modify user to include user.user.discord
+      let discord = {
+        id: message.author.id,
+        username: message.author.username,
+        discriminator: message.author.discriminator
+      }
+      let newToken = randomstring.generate(12);
+      this.dbo.collection("users").updateOne(
+        {
+        "user.email": args[0]
+        },
+        {
+          $set: {
+            "user.discord": discord,
+            "user.discordLoginToken": newToken
+          }
+        }, function(err,res) {
           if (err) throw err;
           return message.author.send(`Logged in as **${user.user.username}** ${message.author}!`);
-        });
-      } else {
-        return message.author.send(`Incorrect password for **${args[0]}** ${message.author}!`);
-      }
-    });
+        }
+      );
+    } else {
+      return message.author.send(`Incorrect login token ${message.author}! Try again or Regenerate your Discord Login Token.`);
+    }
   }
 
   async remoteLogout(message) {
@@ -421,7 +428,7 @@ class Bot {
             { name: `**${prefix}help**`, value: 'Displays this help page', inline: true },
             { name: `**${prefix}ping**`, value: 'Responds with Pong to check Bot responce', inline: true },
             { name: `**${prefix}setPrefix** <new prefix>`, value: 'Sets new prefix (Admin only command)', inline: true },
-            { name: `**${prefix}login** <email> <password>`, value: 'Login to LPS account (DM only command)', inline: true },
+            { name: `**${prefix}login** <email> <login token>`, value: 'Login to LPS account (DM only command)', inline: true },
             { name: `**${prefix}logout**`, value: 'Logs out of your current logged in account', inline: true },
             { name: `**${prefix}validStatus**`, value: 'Shows list of valid statuses to updade to', inline: true },
             { name: `**${prefix}checkStatus** <user>`, value: 'Leave user blank to check own status', inline: true },

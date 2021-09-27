@@ -10,11 +10,11 @@
   "author": "Braeden Sowinski",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.0.1",
     "discord.js": "^12.5.3",
     "express": "^4.17.1",
     "mongodb": "^3.6.8",
     "nodemon": "^2.0.9",
+    "randomstring": "^1.2.1",
     "socket.io-client": "^4.1.2"
   }
 }
