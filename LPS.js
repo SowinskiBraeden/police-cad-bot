@@ -460,9 +460,11 @@ class Bot {
         // Disabled for dev
         // if (command == 'createbolo') this.createBolo(message, args);
 
-        // Dev Commands (not visible in help)
+        // Dev Commands (not visible in help) && easter egg commands
         if (command == 'version') message.channel.send(`**LPS-BOT Version : ${this.dev}-${this.config.version}**`)
         if (command == 'whatisthemeaningoflife') message.channel.send('42');
+        if (command == 'whatareyou' || command == 'whoareyou') message.channel.send('Im your friendly neighborhood Lines Police CAD Bot');
+        if (command == 'whocreatedyou') message.channel.send('Lines Police CAD Developer McDazzzled | https://github.com/SowinskiBraeden');
         if (command == 'pingserver') {
           const socket = io.connect(this.config.socket);
           socket.emit('botping', {message:'hello there'});
