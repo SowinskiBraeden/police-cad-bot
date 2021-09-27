@@ -4,7 +4,7 @@
   "description": "",
   "main": "LPS.js",
   "scripts": {
-    "start": "node LPS.js",
+    "start": "node index.js",
     "dev": "nodemon dev.js"
   },
   "author": "Braeden Sowinski",
