@@ -4,6 +4,8 @@ node_modules/*
 # test file
 test.js
 
-# Dev version
+# Dev Launch
 dev.js
-dev-config.json
+
+# Dev config
+dev_config.json
