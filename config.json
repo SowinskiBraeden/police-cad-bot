@@ -1,6 +1,5 @@
 {
 	"defaultPrefix": "?",
-	"botID": "860298681047056434",
-	"version": "Beta 1.7.1",
-	"socket": "https://police-cad-dev.herokuapp.com/"
+	"version": "1.7.1",
+	"socket": "https://www.linespolice-cad.com/"
 }
