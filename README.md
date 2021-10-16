@@ -1,5 +1,5 @@
 ### Lines Police CAD Discord Bot
-![lines police cad logo](https://github.com/LinesMerrill/police-cad/lines-police-cad.png)
+![lines police cad logo](https://github.com/Linesmerrill/police-cad/blob/master/lines-police-cad.png)
 
 This is the official Lines Police CAD bot for discord integration. It allows you to use Lines Police CAD website features right in your discord channel!
 
