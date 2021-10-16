@@ -1,2 +1,2 @@
 Worker: node index.js
-Worker: node beta.js
+Beta-Worker: node beta.js
