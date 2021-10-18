@@ -396,7 +396,7 @@ class Bot {
         const command = args.shift().toLowerCase();
 
         // Valid Statuses Embed
-        let validStatus = new Discord.MessageEmbed()
+        const validStatus = new Discord.MessageEmbed()
           .setColor('#0099ff')
           .setTitle('Lines Police CAD')
           .setURL('https://www.linespolice-cad.com/')
@@ -418,7 +418,7 @@ class Bot {
           )
 
         // Help Embed
-        let help = new Discord.MessageEmbed()
+        const help = new Discord.MessageEmbed()
           .setColor('#0099ff')
           .setTitle('**Commands:**')
           .setURL('https://discord.gg/jgUW656v2t')
@@ -426,6 +426,7 @@ class Bot {
           .setDescription('Lines Police CAD Bot Commands')
           .addFields(
             { name: `**${prefix}help**`, value: 'Displays this help page', inline: true },
+            { name: `**${prefix}stats**`, value: 'Displays current Bot status', inline: true }, 
             { name: `**${prefix}ping**`, value: 'Responds with Pong to check Bot responce', inline: true },
             { name: `**${prefix}setPrefix** <new prefix>`, value: 'Sets new prefix (Admin only command)', inline: true },
             { name: `**${prefix}login** <email> <login token>`, value: 'Login to LPS account (DM only command)', inline: true },
@@ -441,8 +442,17 @@ class Bot {
             { name: `**${prefix}panic**`, value: 'Enables or disables your panic button', inline: true }
           )
 
+        const stats = new Discord.MessageEmbed()
+            .setColor('#0099ff')
+            .setTitle("Current LPC-Bot Statistics")
+            .setURL('https://discord.gg/jgUW656v2t')
+            .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
+            .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
+            .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")
+
         if (command == 'ping') message.channel.send('Pong!');
         if (command == 'help') message.channel.send(help);
+        if (command == 'stats') message.channel.send(stats);
         if (command == 'setprefix') {
           if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}!`);
           if(!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
