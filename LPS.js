@@ -1,4 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectID
 const randomstring = require('randomstring');
 const io = require('socket.io-client');
 const Discord = require('discord.js');
@@ -281,7 +282,7 @@ class Bot {
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
     if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command ${message.author}!`);
     if (args.length==0) {
-      message.channel.send(`${message.author}'s status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
+      message.channel.send(`${message.author}'s status: \`${user.user.dispatchStatus}\` | Set by: \`${user.user.dispatchStatusSetBy}\``);
     } else {
       let targetUserID = args[0].replace('<@!', '').replace('>', '');
       let targetUser = await this.dbo.collection("users").findOne({"user.discord.id":targetUserID}).then(user => user);
@@ -405,6 +406,15 @@ class Bot {
     });
   }
 
+  async community(message) {
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (user.user.activeCommunity==null) return message.channel.send(`You are not in a community ${message.author}!`);
+    let community = await this.dbo.collection("communities").findOne({_id:ObjectId(user.user.activeCommunity)}).then(community => community);
+    if (!community) return message.channel.send(`Community not found ${message.author}!`);
+    return message.channel.send(`You are in the community \`${community.community.name}\` ${message.author}!`);
+  }
+
   async getPrefix(message) {
     let prefix;
     if (message.channel.type!="dm") {
@@ -486,7 +496,8 @@ class Bot {
             { name: `**${prefix}firearmdb** <Serial #>`, value: '\`Searches for Firearms with the given Serial #\`', inline: true },
             { name: `**${prefix}panic**`, value: '\`Enables or disables your panic button\`', inline: true },
             { name: `**${prefix}joincommunity** <community code>`, value: '\`Joined a community with the given code\`', inline: true },
-            { name: `**${prefix}leavecommunity**`, value: '\`Leaves your current active community\`', inline: true }
+            { name: `**${prefix}leavecommunity**`, value: '\`Leaves your current active community\`', inline: true },
+            { name: `**${prefix}community**`, value: '\`Returns the name of the Community your currenty in\`', inline: true }
           )
 
         const stats = new Discord.MessageEmbed()
@@ -522,6 +533,7 @@ class Bot {
         if (command == 'panic') this.enablePanic(message);
         if (command == 'joincommunity') this.joinCommunity(message, args);
         if (command == 'leavecommunity') this.leaveCommunity(message);
+        if (command == 'community') this.community(message);
 
         // Dev Commands (not visible in help) && easter egg commands
         if (command == 'version') message.channel.send(`**LPS-BOT Version : ${this.dev}-${this.config.version}**`)
