@@ -1,4 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectID
 const randomstring = require('randomstring');
 const io = require('socket.io-client');
 const Discord = require('discord.js');
@@ -20,7 +21,7 @@ class Bot {
 
   // Updates Prefix
   async newPrefix(message, n) {
-    if (n[0]==undefined) return message.channel.send(`You must provide a **new prefix** ${message.author}!`);
+    if (n[0]==undefined) return message.channel.send(`You must provide a \`new prefix\` ${message.author}!`);
     if (n[0].length<1) return message.channel.send('Your new prefix must be \`1\` character!')
     this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.prefix":n[0]}},function(err, res) {
       if (err) throw err;
@@ -32,10 +33,10 @@ class Bot {
   async remoteLogin(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (user) return message.author.send(`You are already logged in ${message.author}! Use \`?logout\` to logout or \`?account\` to see your logged in account.`);
-    if (args.length==0) return message.author.send(`You must provide a **email** and **login token** ${message.author}!`);
-    if (!args[0]==null||!args[0]==undefined&&args[1]==null||args[1]==undefined) return message.author.send(`You must provide a **login token** ${message.author}!`);
+    if (args.length==0) return message.author.send(`You must provide a \`email\` and \`login token\` ${message.author}!`);
+    if (!args[0]==null||!args[0]==undefined&&args[1]==null||args[1]==undefined) return message.author.send(`You must provide a \`login token\` ${message.author}!`);
     user = await this.dbo.collection("users").findOne({"user.email":args[0]}).then(user => user);
-    if (user==null||user==undefined) return message.author.send(`Cannot find the email **${args[0]}** ${message.author}!`);
+    if (user==null||user==undefined) return message.author.send(`Cannot find the email \`${args[0]}\` ${message.author}!`);
     
     // Check discord Login Token
     if (args[1]==user.user.discordLoginToken) {
@@ -57,7 +58,7 @@ class Bot {
           }
         }, function(err,res) {
           if (err) throw err;
-          return message.author.send(`Logged in as **${user.user.username}** ${message.author}!`);
+          return message.author.send(`Logged in as \`${user.user.username}\` ${message.author}!`);
         }
       );
     } else {
@@ -85,12 +86,12 @@ class Bot {
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
     let data;
     if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
-      if (args.length==0) return message.channel.send(`You must provide a **First Name**, **Last Name** and **DOB**(mm/dd/yyyy) ${message.author}!`);
-      if (args.length==1) return message.channel.send(`You're missing a **Last Name** and **DOB**(mm/dd/yyyy) ${message.author}!`);
-      if (args.length==2) return message.channel.send(`You're missing a **DOB**(mm/dd/yyyy) ${message.author}!`);
+      if (args.length==0) return message.channel.send(`You must provide a \`First Name\`, \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}!`);
+      if (args.length==1) return message.channel.send(`You're missing a \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}!`);
+      if (args.length==2) return message.channel.send(`You're missing a \`DOB\`(yyyy-mm-dd) ${message.author}!`);
     }
-    if (args.length==0) return message.channel.send(`You must provide a **First Name** and **Last Name** ${message.author}!`);
-    if (args.length==1) return message.channel.send(`You're missing a **Last Name** ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You must provide a \`First Name\` and \`Last Name\` ${message.author}!`);
+    if (args.length==1) return message.channel.send(`You're missing a \`Last Name\` ${message.author}!`);
 
     if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
       data = {
@@ -119,7 +120,7 @@ class Bot {
 
       if (results.user._id==user._id) {
         if (results.civilians.length == 0) {
-          return message.channel.send(`Name **${args[0]} ${args[1]}** not found ${message.author}`);
+          return message.channel.send(`Name \`${args[0]} ${args[1]}\` not found ${message.author}`);
         }
 
         for (let i = 0; i < results.civilians.length; i++) {
@@ -140,12 +141,12 @@ class Bot {
           .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
           .setDescription('Name Search Results')
           .addFields(
-            { name: `**First Name**`, value: `**${results.civilians[i].civilian.firstName}**`, inline: true },
-            { name: `**Last Name**`, value: `**${results.civilians[i].civilian.lastName}**`, inline: true },
-            { name: `**DOB**`, value: `**${results.civilians[i].civilian.birthday}**`, inline: true },
-            { name: `**Drivers License**`, value: `**${licenceStatus}**`, inline: true },
-            { name: `**Firearm Licence**`, value: `**${firearmLicence}**`, inline: true },
-            { name: `**Gender**`, value: `**${results.civilians[i].civilian.gender}**`, inline: true }
+            { name: `**First Name**`, value: `\`${results.civilians[i].civilian.firstName}\``, inline: true },
+            { name: `**Last Name**`, value: `\`${results.civilians[i].civilian.lastName}\``, inline: true },
+            { name: `**DOB**`, value: `\`${results.civilians[i].civilian.birthday}\``, inline: true },
+            { name: `**Drivers License**`, value: `\`${licenceStatus}\``, inline: true },
+            { name: `**Firearm Licence**`, value: `\`${firearmLicence}\``, inline: true },
+            { name: `**Gender**`, value: `\`${results.civilians[i].civilian.gender}\``, inline: true }
           )
           // Check Other details
           let address = results.civilians[i].civilian.address;
@@ -154,28 +155,28 @@ class Bot {
           let weight = results.civilians[i].civilian.weight;
           let eyeColor = results.civilians[i].civilian.eyeColor;
           let hairColor = results.civilians[i].civilian.hairColor;
-          if (address != null && address != undefined && address != '') nameResult.addFields({ name: `**Address**`, value: `**${address}**`, inline: true });
-          if (occupation != null && occupation != undefined && occupation != '') nameResult.addFields({ name: `**Occupation**`, value: `**${occupation}**`, inline: true });
+          if (address != null && address != undefined && address != '') nameResult.addFields({ name: `**Address**`, value: `\`${address}\``, inline: true });
+          if (occupation != null && occupation != undefined && occupation != '') nameResult.addFields({ name: `**Occupation**`, value: `\`${occupation}\``, inline: true });
           if (height!=null&&height!=undefined&&height!="NaN"&&height!='') {
             if (results.civilians[i].civilian.heightClassification=='imperial') {
               let ft = Math.floor(height/12);
               let inch = height%12;
-              nameResult.addFields({ name: '**Height**', value: `**${ft}'${inch}"**`, inline: true });
+              nameResult.addFields({ name: '**Height**', value: `\`${ft}'${inch}"\``, inline: true });
             } else {
-              nameResult.addFields({ name: '**Height**', value: `**${height}cm**`, inline: true });
+              nameResult.addFields({ name: '**Height**', value: `\`${height}cm\``, inline: true });
             }
           }
           if (weight!=null&&weight!=undefined&&weight!='') {
             if (results.civilians[i].civilian.weightClassification=='imperial') {
-              nameResult.addFields({ name: '**Weight**', value: `**${weight}lbs.**`, inline: true });
+              nameResult.addFields({ name: '**Weight**', value: `\`${weight}lbs.\``, inline: true });
             } else {
-              nameResult.addFields({ name: '**Weight**', value: `**${weight}kgs.**`, inline: true });
+              nameResult.addFields({ name: '**Weight**', value: `\`${weight}kgs.\``, inline: true });
             } 
           }
-          if (eyeColor!=null&&eyeColor!=undefined&&eyeColor!='') nameResult.addFields({name:'**Eye Color**',value:`**${eyeColor}**`,inline:true});
-          if (hairColor!=null&&hairColor!=undefined&&hairColor!='') nameResult.addFields({name:'**Hair Color**',value:`**${hairColor}**`,inline:true});
-          nameResult.addFields({name:'**Organ Donor**',value:`**${results.civilians[i].civilian.organDonor}**`,inline:true});
-          nameResult.addFields({name:'**Veteran**',value:`**${results.civilians[i].civilian.veteran}**`,inline:true});
+          if (eyeColor!=null&&eyeColor!=undefined&&eyeColor!='') nameResult.addFields({name:'**Eye Color**',value:`\`${eyeColor}\``,inline:true});
+          if (hairColor!=null&&hairColor!=undefined&&hairColor!='') nameResult.addFields({name:'**Hair Color**',value:`\`${hairColor}\``,inline:true});
+          nameResult.addFields({name:'**Organ Donor**',value:`\`${results.civilians[i].civilian.organDonor}\``,inline:true});
+          nameResult.addFields({name:'**Veteran**',value:`\`${results.civilians[i].civilian.veteran}\``,inline:true});
           message.channel.send(nameResult);
         }
       }
@@ -186,7 +187,7 @@ class Bot {
   async plateSearch(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
-    if (args.length==0) return message.channel.send(`You are missing a **Plate #** ${message.author}`);
+    if (args.length==0) return message.channel.send(`You are missing a \`Plate #\` ${message.author}`);
     let data = {
       user: user,
       query: {
@@ -200,7 +201,7 @@ class Bot {
       
       if (results.user._id==user._id) {
         if (results.vehicles.length == 0) {
-          return message.channel.send(`Plate Number **${args[0]}** not found ${message.author}`);
+          return message.channel.send(`Plate Number \`${args[0]}\` not found ${message.author}`);
         }
 
         for (let i = 0; i < results.vehicles.length; i++) {
@@ -211,22 +212,22 @@ class Bot {
           .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
           .setDescription('Plate Search Results')
           .addFields(
-            { name: `**Plate #**`, value: `**${results.vehicles[i].vehicle.plate}**`, inline: true },
-            { name: `**Vin #**`, value: `**${results.vehicles[i].vehicle.vin}**`, inline: true },
-            { name: `**Model**`, value: `**${results.vehicles[i].vehicle.model}**`, inline: true },
-            { name: `**Color**`, value: `**${results.vehicles[i].vehicle.color}**`, inline: true },
-            { name: `**Owner**`, value: `**${results.vehicles[i].vehicle.registeredOwner}**`, inline: true },
+            { name: `**Plate #**`, value: `\`${results.vehicles[i].vehicle.plate}\``, inline: true },
+            { name: `**Vin #**`, value: `\`${results.vehicles[i].vehicle.vin}\``, inline: true },
+            { name: `**Model**`, value: `\`${results.vehicles[i].vehicle.model}\``, inline: true },
+            { name: `**Color**`, value: `\`${results.vehicles[i].vehicle.color}\``, inline: true },
+            { name: `**Owner**`, value: `\`${results.vehicles[i].vehicle.registeredOwner}\``, inline: true },
           )
           // Other details
           let validRegistration = results.vehicles[i].vehicle.validRegistration;
           let validInsurance = results.vehicles[i].vehicle.validInsurance;
           let stolen = results.vehicles[i].vehicle.isStolen;
-          if (validRegistration=='1') plateResult.addFields({ name: `**Registration**`, value: `**Valid**`, inline: true });
-          if (validRegistration=='2') plateResult.addFields({ name: `**Registration**`, value: `**InValid**`, inline: true });
-          if (validInsurance=='1') plateResult.addFields({ name: `**Insurance**`, value: `**Valid**`, inline: true });
-          if (validInsurance=='2') plateResult.addFields({ name: `**Insurance**`, value: `**InValid**`, inline: true });
-          if (stolen=='1') plateResult.addFields({ name: `**Stolen**`, value: `**No**`, inline: true });
-          if (stolen=='2') plateResult.addFields({ name: `**Stolen**`, value: `**Yes**`, inline: true });
+          if (validRegistration=='1') plateResult.addFields({ name: `**Registration**`, value: `\`Valid\``, inline: true });
+          if (validRegistration=='2') plateResult.addFields({ name: `**Registration**`, value: `\`InValid\``, inline: true });
+          if (validInsurance=='1') plateResult.addFields({ name: `**Insurance**`, value: `\`Valid\``, inline: true });
+          if (validInsurance=='2') plateResult.addFields({ name: `**Insurance**`, value: `\`InValid\``, inline: true });
+          if (stolen=='1') plateResult.addFields({ name: `**Stolen**`, value: `\`No\``, inline: true });
+          if (stolen=='2') plateResult.addFields({ name: `**Stolen**`, value: `\`Yes\``, inline: true });
           message.channel.send(plateResult);
         }
       }
@@ -237,7 +238,7 @@ class Bot {
   async firearmSearch(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
-    if (args.length==0) return message.channel.send(`You are missing a **Serial Number** ${message.author}`);
+    if (args.length==0) return message.channel.send(`You are missing a \`Serial Number\` ${message.author}`);
     let data = {
       user: user,
       query: {
@@ -261,14 +262,14 @@ class Bot {
           .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
           .setDescription('Firearm Search Results')
           .addFields(
-            { name: `**Serial Number**`, value: `**${results.firearms[i].firearm.serialNumber}**`, inline: true },
-            { name: `**Type**`, value: `**${results.firearms[i].firearm.weaponType}**`, inline: true },
-            { name: `**Owner**`, value: `**${results.firearms[i].firearm.registeredOwner}**`, inline: true },
+            { name: `**Serial Number**`, value: `\`${results.firearms[i].firearm.serialNumber}\``, inline: true },
+            { name: `**Type**`, value: `\`${results.firearms[i].firearm.weaponType}\``, inline: true },
+            { name: `**Owner**`, value: `\`${results.firearms[i].firearm.registeredOwner}\``, inline: true },
           )
           // Other details
           let isStolen = results.firearms[i].firearm.isStolen;
-          if (isStolen=="false"||isStolen==false) firearmResult.addFields({name:`**Stolen**`,value:'**No**',inline: true});
-          if (isStolen=="true"||isStolen==true) firearmResult.addFields({name:`**Stolen**`,value:'**Yes**',inline: true});
+          if (isStolen=="false"||isStolen==false) firearmResult.addFields({name:`**Stolen**`,value:'\`No\`',inline: true});
+          if (isStolen=="true"||isStolen==true) firearmResult.addFields({name:`**Stolen**`,value:'\`Yes\`',inline: true});
           message.channel.send(firearmResult);
         }
       }
@@ -277,16 +278,21 @@ class Bot {
   }
 
   async checkStatus(message, args) {
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command ${message.author}!`);
     if (args.length==0) {
-      let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-      if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
-      message.channel.send(`${message.author}'s status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
+      message.channel.send(`${message.author}'s status: \`${user.user.dispatchStatus}\` | Set by: \`${user.user.dispatchStatusSetBy}\``);
     } else {
-      let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-      if (!user) return message.channel.send(`Cannot find **${args[0]}** ${message.author}!`);
+      let targetUserID = args[0].replace('<@!', '').replace('>', '');
+      let targetUser = await this.dbo.collection("users").findOne({"user.discord.id":targetUserID}).then(user => user);
       // This lame line of code to get username without ping on discord
       const User = client.users.cache.get(args[0].replace('<@!', '').replace('>', ''));
-      message.channel.send(`${message.author}, **${User.tag}'s** status: ${user.user.dispatchStatus} | Set by: ${user.user.dispatchStatusSetBy}`);
+      if (!targetUser) return message.channel.send(`Cannot find **${User.tag}** ${message.author}!`);
+      if (targetUser.user.activeCommunity!=user.user.activeCommunity) {
+        return message.channel.send(`You are not in the same community as \`${User.tag}\` ${message.author}!`);
+      }
+      return message.channel.send(`${message.author}, \`${User.tag}'s\` status: \`${targetUser.user.dispatchStatus}\` | Set by: \`${targetUser.user.dispatchStatusSetBy}\``);
     }
   }
 
@@ -294,8 +300,9 @@ class Bot {
     let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80', 'Panic', '10-41', '10-42'];
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command ${message.author}!`);
     if (args.length==0) return message.channel.send(`You must provide a new status ${message.author} | To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
-    if (!validStatus.includes(args[0])) return message.channel.send(`**${args[0]}** is a Invalid Status ${message.author}! To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
+    if (!validStatus.includes(args[0])) return message.channel.send(`\`${args[0]}\` is a Invalid Status ${message.author}! To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
     let onDuty=null;
     let updateDuty=false;
     let status = args[0]
@@ -319,7 +326,7 @@ class Bot {
     const socket = io.connect(this.config.socket);
     socket.emit('bot_update_status', req);
     socket.on('bot_updated_status', (res) => {
-        message.channel.send(`Succesfully updated status to **${args[0]}** ${message.author}!`);
+        message.channel.send(`Succesfully updated status to \`${args[0]}\` ${message.author}!`);
         socket.disconnect();
     });
   }
@@ -327,6 +334,7 @@ class Bot {
   async enablePanic(message) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command ${message.author}!`);
     // If panic isn't enabled, enable panic
     if (user.user.dispatchStatus!='Panic') {
       this.updateStatus(message, ['Panic'], null);
@@ -338,7 +346,8 @@ class Bot {
       const socket = io.connect(this.config.socket);
       socket.emit('botping');
       socket.emit('panic_button_update', myReq);
-      message.channel.send(`Enabled Panic ${message.author}!`);
+      socket.disconnect()
+      return message.channel.send(`Enabled Panic ${message.author}!`);
     // If panic is enabled, set status to Online (panic off)
     } else if (user.user.dispatchStatus=='Panic') {
       let myReq = {
@@ -356,8 +365,54 @@ class Bot {
         updateDuty: false
       };
       socket.emit('update_status', myUpdateReq);
-      message.channel.send(`Disabled Panic ${message.author} and set status to 10-8.`);
+      socket.disconnect()
+      return message.channel.send(`Disabled Panic ${message.author} and set status to \`10-8\`.`);
     }
+  }
+
+  async joinCommunity(message, args) {
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You must provide a \`Community Code\` ${message.author}!`);
+    let myReq = {
+      userID: user._id,
+      communityCode: args[0]
+    };
+    const socket = io.connect(this.config.socket);
+    socket.emit('bot_join_community', myReq);
+    socket.on('bot_joined_community', (data) => {
+      socket.disconnect()
+      if (data.error) {
+        return message.channel.send(`${data.error} ${message.author}!`);
+      }
+      return message.channel.send(`Successfully joined the community \` ${data.commName} \` ${message.author}`)
+    });
+  }
+
+  async leaveCommunity(message) {
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    let myReq = {
+      userID: user._id
+    };
+    const socket = io.connect(this.config.socket);
+    socket.emit('bot_leave_community', myReq);
+    socket.on('bot_left_community', (data) => {
+      socket.disconnect()
+      if (data.error) {
+        return message.channel.send(`${data.error} ${message.author}!`);
+      }
+      return message.channel.send(`${data.message} ${message.author}`)
+    });
+  }
+
+  async community(message) {
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (user.user.activeCommunity==null) return message.channel.send(`You are not in a community ${message.author}!`);
+    let community = await this.dbo.collection("communities").findOne({_id:ObjectId(user.user.activeCommunity)}).then(community => community);
+    if (!community) return message.channel.send(`Community not found ${message.author}!`);
+    return message.channel.send(`You are in the community \`${community.community.name}\` ${message.author}!`);
   }
 
   async getPrefix(message) {
@@ -404,15 +459,15 @@ class Bot {
           .setDescription('Valid Statuses')
           .addFields(
             { name: 'Statuses:', value: `
-              10-8   |  On Duty
-              10-7   |  Off Duty
-              10-6   |  Busy
-              10-11  |  Traffic Stop
-              10-23  |  Arrive on Scene
-              10-97  |  In Route
-              10-15  |  Subject in Custody
-              10-70  |  Foot Pursuit
-              10-80  |  Vehicle Pursiut
+              10-8   |  \`On Duty\`
+              10-7   |  \`Off Duty\`
+              10-6   |  \`Busy\`
+              10-11  |  \`Traffic Stop\`
+              10-23  |  \`Arrive on Scene\`
+              10-97  |  \`In Route\`
+              10-15  |  \`Subject in Custody\`
+              10-70  |  \`Foot Pursuit\`
+              10-80  |  \`Vehicle Pursiut\`
               `
             }    
           )
@@ -425,21 +480,24 @@ class Bot {
           .setAuthor('LPS Website & Bot Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
           .setDescription('Lines Police CAD Bot Commands')
           .addFields(
-            { name: `**${prefix}help**`, value: 'Displays this help page', inline: true },
-            { name: `**${prefix}stats**`, value: 'Displays current Bot status', inline: true }, 
-            { name: `**${prefix}ping**`, value: 'Responds with Pong to check Bot responce', inline: true },
-            { name: `**${prefix}setPrefix** <new prefix>`, value: 'Sets new prefix (Admin only command)', inline: true },
-            { name: `**${prefix}login** <email> <login token>`, value: 'Login to LPS account (DM only command)', inline: true },
-            { name: `**${prefix}logout**`, value: 'Logs out of your current logged in account', inline: true },
-            { name: `**${prefix}validStatus**`, value: 'Shows list of valid statuses to updade to', inline: true },
-            { name: `**${prefix}checkStatus** <user>`, value: 'Leave user blank to check own status', inline: true },
-            { name: `**${prefix}updateStatus** <status>`, value: 'Updates your status', inline: true },
-            { name: `**${prefix}account**`, value: 'returns logged in account', inline: true },
-            { name: `**${prefix}penalCodes**`, value: 'Provides Link to penal codes', inline: true },
-            { name: `**${prefix}namedb <firstName> <lastName> <dob>**`, value: 'Searches in your community for name (dob only required if not in a community)', inline: true },
-            { name: `**${prefix}platedb <licence plate #>**`, value: 'Searches in your community for Vehicles with the given Licence plate #', inline: true },
-            { name: `**${prefix}firearmdb <Serial #>**`, value: 'Searches for Firearms with the given Serial #', inline: true },
-            { name: `**${prefix}panic**`, value: 'Enables or disables your panic button', inline: true }
+            { name: `**${prefix}help**`, value: '\`Displays this help page\`', inline: true },
+            { name: `**${prefix}stats**`, value: '\`Displays current Bot status\`', inline: true }, 
+            { name: `**${prefix}ping**`, value: '\`Responds with Pong to check Bot responce\`', inline: true },
+            { name: `**${prefix}setPrefix** <new prefix>`, value: '\`Sets new prefix (Admin only command)\`', inline: true },
+            { name: `**${prefix}login** <email> <login token>`, value: '\`Login to LPS account (DM only command)\`', inline: true },
+            { name: `**${prefix}logout**`, value: '\`Logs out of your current logged in account\`', inline: true },
+            { name: `**${prefix}validStatus**`, value: '\`Shows list of valid statuses to updade to\`', inline: true },
+            { name: `**${prefix}checkStatus** <user>`, value: '\`Leave user blank to check own status\`', inline: true },
+            { name: `**${prefix}updateStatus** <status>`, value: '\`Updates your status\`', inline: true },
+            { name: `**${prefix}account**`, value: '\`returns logged in account\`', inline: true },
+            { name: `**${prefix}penalCodes**`, value: '\`Provides Link to penal codes\`', inline: true },
+            { name: `**${prefix}namedb** <firstName> <lastName> <dob>`, value: '\`Searches in your community for name (dob only required if not in a community)\`', inline: true },
+            { name: `**${prefix}platedb** <licence plate #>`, value: '\`Searches in your community for Vehicles with the given Licence plate #\`', inline: true },
+            { name: `**${prefix}firearmdb** <Serial #>`, value: '\`Searches for Firearms with the given Serial #\`', inline: true },
+            { name: `**${prefix}panic**`, value: '\`Enables or disables your panic button\`', inline: true },
+            { name: `**${prefix}joincommunity** <community code>`, value: '\`Joined a community with the given code\`', inline: true },
+            { name: `**${prefix}leavecommunity**`, value: '\`Leaves your current active community\`', inline: true },
+            { name: `**${prefix}community**`, value: '\`Returns the name of the Community your currenty in\`', inline: true }
           )
 
         const stats = new Discord.MessageEmbed()
@@ -473,9 +531,9 @@ class Bot {
         if (command == 'platedb') this.plateSearch(message, args);
         if (command == 'firearmdb') this.firearmSearch(message, args);
         if (command == 'panic') this.enablePanic(message);
-
-        // Disabled for dev
-        // if (command == 'createbolo') this.createBolo(message, args);
+        if (command == 'joincommunity') this.joinCommunity(message, args);
+        if (command == 'leavecommunity') this.leaveCommunity(message);
+        if (command == 'community') this.community(message);
 
         // Dev Commands (not visible in help) && easter egg commands
         if (command == 'version') message.channel.send(`**LPS-BOT Version : ${this.dev}-${this.config.version}**`)
