@@ -415,6 +415,25 @@ class Bot {
     return message.channel.send(`You are in the community \`${community.community.name}\` ${message.author}!`);
   }
 
+  async setChannel(message, args) {
+    if (args.length==0) return message.channel.send(`You must provide a channel ${message.author}!`);
+    let channel = client.channels.cache.get(args[0].replace('<#', '').replace('>', ''));
+    if (!channel) return message.channel.send(`Cannot find that channel ${message.author}!`);
+    if (channel.type=="voice") return message.channel.send(`Connot set voice channel to preferred channel ${message.author}!`);
+    if (channel.deleted) return message.channel.send(`Connot set deleted channel to preferred channel ${message.author}!`);
+    this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.preferredChannelId":channel.id}},function(err, res) {
+      if (err) throw err;
+      return message.channel.send(`Successfuly set \` ${channel.name} \` to prefered channel ${message.author}!`);
+    });
+  }
+
+  async removeChannel(message) {
+    this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.preferredChannelId":null}},function(err, res) {
+      if (err) throw err;
+      return message.channel.send(`Successfuly removed preferred channel ${message.author}!`);
+    }); 
+  }
+
   async getPrefix(message) {
     let prefix;
     if (message.channel.type!="dm") {
@@ -437,117 +456,156 @@ class Bot {
     return prefix
   }
 
+  async getPreferredChannel(message) {
+    let channelId;
+    if (message.channel.type!="dm") {
+      let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+
+      if (!guild) {
+        let newGuild = {
+          server: {
+            serverID: message.guild.id,
+            prefix: this.config.defaultPrefix
+          }
+        }
+        this.dbo.collection("prefixes").insertOne(newGuild, function(err, res) {
+          if (err) throw err;
+        });
+        prefix = newGuild.server.serverID;
+      } else channelId = guild.server.preferredChannelId;
+    } else channelId = null;
+    return channelId;
+  }
+
   main() {
     client.on('ready', () => {
       console.log(`Logged in as ${client.user.tag}`);
     });
 
     // Basic Commands
-    client.on('message', (message) => {
+    client.on('message', async (message) => {
       this.getPrefix(message).then(prefix => {
         if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-        const args = message.content.slice(prefix.length).trim().split(' ');
-        const command = args.shift().toLowerCase();
+        this.getPreferredChannel(message).then(channelId => {
+          if (channelId != null && message.channel.id!=channelId) {
+            return message.channel.send(`This is not the preferred channel, please use the channel <#${channelId}> ${message.author}!`);
+          }
+          const args = message.content.slice(prefix.length).trim().split(' ');
+          const command = args.shift().toLowerCase();
 
-        // Valid Statuses Embed
-        const validStatus = new Discord.MessageEmbed()
-          .setColor('#0099ff')
-          .setTitle('Lines Police CAD')
-          .setURL('https://www.linespolice-cad.com/')
-          .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
-          .setDescription('Valid Statuses')
-          .addFields(
-            { name: 'Statuses:', value: `
-              10-8   |  \`On Duty\`
-              10-7   |  \`Off Duty\`
-              10-6   |  \`Busy\`
-              10-11  |  \`Traffic Stop\`
-              10-23  |  \`Arrive on Scene\`
-              10-97  |  \`In Route\`
-              10-15  |  \`Subject in Custody\`
-              10-70  |  \`Foot Pursuit\`
-              10-80  |  \`Vehicle Pursiut\`
-              `
-            }    
-          )
-
-        // Help Embed
-        const help = new Discord.MessageEmbed()
-          .setColor('#0099ff')
-          .setTitle('**Commands:**')
-          .setURL('https://discord.gg/jgUW656v2t')
-          .setAuthor('LPS Website & Bot Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
-          .setDescription('Lines Police CAD Bot Commands')
-          .addFields(
-            { name: `**${prefix}help**`, value: '\`Displays this help page\`', inline: true },
-            { name: `**${prefix}stats**`, value: '\`Displays current Bot status\`', inline: true }, 
-            { name: `**${prefix}ping**`, value: '\`Responds with Pong to check Bot responce\`', inline: true },
-            { name: `**${prefix}setPrefix** <new prefix>`, value: '\`Sets new prefix (Admin only command)\`', inline: true },
-            { name: `**${prefix}login** <email> <login token>`, value: '\`Login to LPS account (DM only command)\`', inline: true },
-            { name: `**${prefix}logout**`, value: '\`Logs out of your current logged in account\`', inline: true },
-            { name: `**${prefix}validStatus**`, value: '\`Shows list of valid statuses to updade to\`', inline: true },
-            { name: `**${prefix}checkStatus** <user>`, value: '\`Leave user blank to check own status\`', inline: true },
-            { name: `**${prefix}updateStatus** <status>`, value: '\`Updates your status\`', inline: true },
-            { name: `**${prefix}account**`, value: '\`returns logged in account\`', inline: true },
-            { name: `**${prefix}penalCodes**`, value: '\`Provides Link to penal codes\`', inline: true },
-            { name: `**${prefix}namedb** <firstName> <lastName> <dob>`, value: '\`Searches in your community for name (dob only required if not in a community)\`', inline: true },
-            { name: `**${prefix}platedb** <licence plate #>`, value: '\`Searches in your community for Vehicles with the given Licence plate #\`', inline: true },
-            { name: `**${prefix}firearmdb** <Serial #>`, value: '\`Searches for Firearms with the given Serial #\`', inline: true },
-            { name: `**${prefix}panic**`, value: '\`Enables or disables your panic button\`', inline: true },
-            { name: `**${prefix}joincommunity** <community code>`, value: '\`Joined a community with the given code\`', inline: true },
-            { name: `**${prefix}leavecommunity**`, value: '\`Leaves your current active community\`', inline: true },
-            { name: `**${prefix}community**`, value: '\`Returns the name of the Community your currenty in\`', inline: true }
-          )
-
-        const stats = new Discord.MessageEmbed()
+          // Valid Statuses Embed
+          const validStatus = new Discord.MessageEmbed()
             .setColor('#0099ff')
-            .setTitle("Current LPC-Bot Statistics")
+            .setTitle('Lines Police CAD')
+            .setURL('https://www.linespolice-cad.com/')
+            .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+            .setDescription('Valid Statuses')
+            .addFields(
+              { name: 'Statuses:', value: `
+                10-8   |  \`On Duty\`
+                10-7   |  \`Off Duty\`
+                10-6   |  \`Busy\`
+                10-11  |  \`Traffic Stop\`
+                10-23  |  \`Arrive on Scene\`
+                10-97  |  \`In Route\`
+                10-15  |  \`Subject in Custody\`
+                10-70  |  \`Foot Pursuit\`
+                10-80  |  \`Vehicle Pursiut\`
+                `
+              }    
+            )
+
+          // Help Embed
+          const help = new Discord.MessageEmbed()
+            .setColor('#0099ff')
+            .setTitle('**Commands:**')
             .setURL('https://discord.gg/jgUW656v2t')
-            .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
-            .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
-            .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")
+            .setAuthor('LPS Website & Bot Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+            .setDescription('Lines Police CAD Bot Commands')
+            .addFields(
+              { name: `**${prefix}help**`, value: '\`Displays this help page\`', inline: true },
+              { name: `**${prefix}stats**`, value: '\`Displays current Bot status\`', inline: true }, 
+              { name: `**${prefix}ping**`, value: '\`Responds with Pong to check Bot responce\`', inline: true },
+              { name: `**${prefix}setPrefix** <new prefix>`, value: '\`Sets new prefix (Admin only command)\`', inline: true },
+              { name: `**${prefix}login** <email> <login token>`, value: '\`Login to LPS account (DM only command)\`', inline: true },
+              { name: `**${prefix}logout**`, value: '\`Logs out of your current logged in account\`', inline: true },
+              { name: `**${prefix}validStatus**`, value: '\`Shows list of valid statuses to updade to\`', inline: true },
+              { name: `**${prefix}checkStatus** <user>`, value: '\`Leave user blank to check own status\`', inline: true },
+              { name: `**${prefix}updateStatus** <status>`, value: '\`Updates your status\`', inline: true },
+              { name: `**${prefix}account**`, value: '\`returns logged in account\`', inline: true },
+              { name: `**${prefix}penalCodes**`, value: '\`Provides Link to penal codes\`', inline: true },
+              { name: `**${prefix}namedb** <firstName> <lastName> <dob>`, value: '\`Searches in your community for name (dob only required if not in a community)\`', inline: true },
+              { name: `**${prefix}platedb** <licence plate #>`, value: '\`Searches in your community for Vehicles with the given Licence plate #\`', inline: true },
+              { name: `**${prefix}firearmdb** <Serial #>`, value: '\`Searches for Firearms with the given Serial #\`', inline: true },
+              { name: `**${prefix}panic**`, value: '\`Enables or disables your panic button\`', inline: true },
+              { name: `**${prefix}joincommunity** <community code>`, value: '\`Joined a community with the given code\`', inline: true },
+              { name: `**${prefix}leavecommunity**`, value: '\`Leaves your current active community\`', inline: true },
+              { name: `**${prefix}community**`, value: '\`Returns the name of the Community your currenty in\`', inline: true },
+              { name: `**${prefix}setChannel** <channel>`, value: `\`Sets preferred channel allowed for commands (Admin only command)\``, inline: true },
+              { name: `**${prefix}removeChannel**`, value: `\nRemoves preferred channel (Admin only command)\n`, inline: true }
+            )
 
-        if (command == 'ping') message.channel.send('Pong!');
-        if (command == 'help') message.channel.send(help);
-        if (command == 'stats') message.channel.send(stats);
-        if (command == 'setprefix') {
-          if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}!`);
-          if(!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
-          this.newPrefix(message, args);
-        }
-        // Login
-        if (command == 'login') {
-          if (message.channel.type=="text") return message.channel.send(`You must direct message me to use this command ${message.author}!`);
-          this.remoteLogin(message, args);
-        }
-        if (command == 'logout') this.remoteLogout(message);
-        if (command == 'validstatus') message.channel.send(validStatus);
-        if (command == 'checkstatus') this.checkStatus(message, args);
-        if (command == 'updatestatus') this.updateStatus(message, args, prefix);
-        if (command == 'account') this.account(message);
-        if (command == 'penalcodes') return message.channel.send('https://www.linespolice-cad.com/penal-code');
-        if (command == 'namedb') this.nameSearch(message, args);
-        if (command == 'platedb') this.plateSearch(message, args);
-        if (command == 'firearmdb') this.firearmSearch(message, args);
-        if (command == 'panic') this.enablePanic(message);
-        if (command == 'joincommunity') this.joinCommunity(message, args);
-        if (command == 'leavecommunity') this.leaveCommunity(message);
-        if (command == 'community') this.community(message);
+          const stats = new Discord.MessageEmbed()
+              .setColor('#0099ff')
+              .setTitle("Current LPC-Bot Statistics")
+              .setURL('https://discord.gg/jgUW656v2t')
+              .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
+              .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
+              .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")
 
-        // Dev Commands (not visible in help) && easter egg commands
-        if (command == 'version') message.channel.send(`**LPS-BOT Version : ${this.dev}-${this.config.version}**`)
-        if (command == 'whatisthemeaningoflife') message.channel.send('42');
-        if (command == 'whatareyou' || command == 'whoareyou') message.channel.send('Im your friendly neighborhood Lines Police CAD Bot');
-        if (command == 'whocreatedyou') message.channel.send('Lines Police CAD Developer McDazzzled | https://github.com/SowinskiBraeden');
-        if (command == 'pingserver') {
-          const socket = io.connect(this.config.socket);
-          socket.emit('botping', {message:'hello there'});
-          socket.on('botpong', (data) => {
-            console.log(data);
-            socket.disconnect();
-          });
-        }
+          if (command == 'ping') message.channel.send('Pong!');
+          if (command == 'help') message.channel.send(help);
+          if (command == 'stats') message.channel.send(stats);
+          if (command == 'setprefix') {
+            if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}!`);
+            if(!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
+            this.newPrefix(message, args);
+          }
+          if (command == 'setchannel') {
+            if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}!`);
+            if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
+            this.setChannel(message, args);
+          }
+          if (command == 'removechannel') {
+            if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}!`);
+            if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
+            this.removeChannel(message); 
+          }
+
+          // Login
+          if (command == 'login') {
+            if (message.channel.type=="text") return message.channel.send(`You must direct message me to use this command ${message.author}!`);
+            this.remoteLogin(message, args);
+          }
+          if (command == 'logout') this.remoteLogout(message);
+          if (command == 'validstatus') message.channel.send(validStatus);
+          if (command == 'checkstatus') this.checkStatus(message, args);
+          if (command == 'updatestatus') this.updateStatus(message, args, prefix);
+          if (command == 'account') this.account(message);
+          if (command == 'penalcodes') return message.channel.send('https://www.linespolice-cad.com/penal-code');
+          if (command == 'namedb') this.nameSearch(message, args);
+          if (command == 'platedb') this.plateSearch(message, args);
+          if (command == 'firearmdb') this.firearmSearch(message, args);
+          if (command == 'panic') this.enablePanic(message);
+          if (command == 'joincommunity') this.joinCommunity(message, args);
+          if (command == 'leavecommunity') this.leaveCommunity(message);
+          if (command == 'community') this.community(message);
+
+          // Dev Commands (not visible in help) && easter egg commands
+          if (command == 'version') message.channel.send(`**LPS-BOT Version : ${this.dev}-${this.config.version}**`)
+          if (command == 'whatisthemeaningoflife') message.channel.send('42');
+          if (command == 'whatareyou' || command == 'whoareyou') message.channel.send('Im your friendly neighborhood Lines Police CAD Bot');
+          if (command == 'whocreatedyou') message.channel.send('Lines Police CAD Developer McDazzzled | https://github.com/SowinskiBraeden');
+          if (command == 'pingserver') {
+            const socket = io.connect(this.config.socket);
+            socket.emit('botping', {message:'hello there'});
+            socket.on('botpong', (data) => {
+              console.log(data);
+              socket.disconnect();
+            });
+          }
+        });
       });
     });
     
