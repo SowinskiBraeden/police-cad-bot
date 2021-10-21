@@ -543,7 +543,7 @@ class Bot {
               { name: `**${prefix}leavecommunity**`, value: '\`Leaves your current active community\`', inline: true },
               { name: `**${prefix}community**`, value: '\`Returns the name of the Community your currenty in\`', inline: true },
               { name: `**${prefix}setChannel** <channel>`, value: `\`Sets preferred channel allowed for commands (Admin only command)\``, inline: true },
-              { name: `**${prefix}removeChannel**`, value: `\nRemoves preferred channel (Admin only command)\n`, inline: true }
+              { name: `**${prefix}removeChannel**`, value: `\`Removes preferred channel (Admin only command)\``, inline: true }
             )
 
           const stats = new Discord.MessageEmbed()
