@@ -280,8 +280,8 @@ class Bot {
   async checkStatus(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
-    if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command ${message.author}!`);
-    if (args.length==0) {
+    if (user.user.activeCommunity == null) return message.channel.send(`You must join a community to use this command ${message.author}!`);
+    if (args.length == 0) {
       message.channel.send(`${message.author}'s status: \`${user.user.dispatchStatus}\` | Set by: \`${user.user.dispatchStatusSetBy}\``);
     } else {
       let targetUserID = args[0].replace('<@!', '').replace('>', '');
@@ -520,7 +520,7 @@ class Bot {
           const help = new Discord.MessageEmbed()
             .setColor('#0099ff')
             .setTitle('**Commands:**')
-            .setURL('https://discord.gg/jgUW656v2t')
+            .setURL('https://discord.gg/w2g2FFmHbF')
             .setAuthor('LPS Website & Bot Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
             .setDescription('Lines Police CAD Bot Commands')
             .addFields(
@@ -549,7 +549,7 @@ class Bot {
           const stats = new Discord.MessageEmbed()
               .setColor('#0099ff')
               .setTitle("Current LPC-Bot Statistics")
-              .setURL('https://discord.gg/jgUW656v2t')
+              .setURL('https://discord.gg/w2g2FFmHbF')
               .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
               .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
               .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")
