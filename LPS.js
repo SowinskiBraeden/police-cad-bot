@@ -37,8 +37,8 @@ class Bot {
     if (!args[0]==null||!args[0]==undefined&&args[1]==null||args[1]==undefined) return message.author.send(`You must provide a \`login token\` ${message.author}!`);
     user = await this.dbo.collection("users").findOne({"user.email":args[0]}).then(user => user);
     if (user==null||user==undefined) return message.author.send(`Cannot find the email \`${args[0]}\` ${message.author}!`);
-    
-    // Check discord Login Token
+
+    // Check discord Token
     if (args[1]==user.user.discordLoginToken) {
       // Modify user to include user.user.discord
       let discord = {
@@ -415,6 +415,70 @@ class Bot {
     return message.channel.send(`You are in the community \`${community.community.name}\` ${message.author}!`);
   }
 
+  async setRole(message, args) {
+    if (args.length==0) return message.channel.send(`You must provide a role ${message.author}!`);
+    let roleid = args[0].replace('<@&', '').replace('>', '');
+    let role = message.guild.roles.cache.find(x => x.id == roleid);
+    if (role == undefined) {
+      return message.channel.send(`Uh Oh! The role ${args[0]} connot be found.`);
+    } else {
+      let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+      if (guild.server.allowedRole!=undefined&&guild.server.allowedRoles.includes(roleid)) return message.channel.send(`The role ${args[0]} has already been added ${message.author}!`);
+      this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$push:{"server.allowedRoles":roleid},$set:{"server.hasCustomRoles":true}},function(err, res) {
+        if (err) throw err;
+        return message.channel.send(`Successfuly added ${args[0]} to allowed roles ${message.author}!`);
+      });
+    }
+  }
+
+  async removeRole(message, args) {
+    if (args.length==0) return message.channel.send(`You must provide a role ${message.author}!`);
+    let roleid = args[0].replace('<@&', '').replace('>', '');
+    let role = message.guild.roles.cache.find(x => x.id == roleid);
+    if (role == undefined) {
+      return message.channel.send(`Uh Oh! The role ${args[0]} connot be found.`);
+    } else {
+      let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+      if (guild.server.allowedRoles.length==0) return message.channel.send(`There are no roles to be removed ${message.author}!`);
+      if (!guild.server.allowedRoles.includes(roleid)) return message.channel.send(`The role ${args[0]} is not added to your roles ${message.author}!`);
+      for (let i = 0; i < guild.server.allowedRoles.length; i++) {
+        if (guild.server.allowedRoles[i]==roleid) {
+          if ((guild.server.allowedRoles.length-1)==0) {
+            this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$pull:{"server.allowedRoles":roleid},$set:{"server.hasCustomRoles":false}},function(err, res) {
+              if (err) throw err;
+              return message.channel.send(`Successfuly removed ${args[0]} from allowed roles ${message.author}! There are no more allowed roles.`);
+            });  
+          } else if ((guild.server.allowedRoles.length-1)>0) {
+            this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$pull:{"server.allowedRoles":roleid}},function(err, res) {
+              if (err) throw err;
+              return message.channel.send(`Successfuly removed ${args[0]} from allowed roles ${message.author}!`);
+            });
+          }
+        }
+      }
+    }
+  }
+
+  async roles(message) {
+    let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+    if (guild.server.hasCustomRoles==false) {
+      return message.channel.send('There are no roles set for the bot.');
+    }
+    let rolesEmbed = new Discord.MessageEmbed()
+      .setColor('#0099ff')
+      .setTitle('Lines Police CAD')
+      .setURL('https://discord.gg/w2g2FFmHbF')
+      .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+      .setDescription('Allowed Roles:')
+
+    let roles = "Allowed Roles:";
+    for (let i = 0; i < guild.server.allowedRoles.length; i++) {
+      if (guild.server.allowedRoles[i] == undefined) break;
+      roles = roles + `\n<@&${guild.server.allowedRoles[i]}>`;
+    }
+    return message.channel.send(roles);
+  }
+
   async setChannel(message, args) {
     if (args.length==0) return message.channel.send(`You must provide a channel ${message.author}!`);
     let channel = client.channels.cache.get(args[0].replace('<#', '').replace('>', ''));
@@ -434,47 +498,49 @@ class Bot {
     }); 
   }
 
-  async getPrefix(message) {
+  async getGuildPresets(message) {
     let prefix;
+    let channelId;
+    let customeRoleStatus;
     if (message.channel.type!="dm") {
       let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
 
-      // If not prefix, generate server default
+      // If guild not found, generate guild default
       if (!guild) {
         let newGuild = {
           server: {
             serverID: message.guild.id,
-            prefix: this.config.defaultPrefix
+            prefix: this.config.defaultPrefix,
+            hasCustomeRoles: false,
           }
         }
         this.dbo.collection("prefixes").insertOne(newGuild, function(err, res) {
           if (err) throw err;
         });
-        prefix = newGuild.server.serverID;
-      } else prefix = guild.server.prefix;
-    } else prefix = this.config.defaultPrefix;
-    return prefix
+        prefix = newGuild.server.prefix;
+        channelId = newGuild.server.preferredChannelId;
+        customeRoleStatus = newGuild.server.hasCustomRoles;
+      } else {
+        prefix = guild.server.prefix;
+        channelId = guild.server.preferredChannelId;
+        customeRoleStatus = guild.server.hasCustomRoles;
+      }
+    } else {
+      prefix = this.config.defaultPrefix;
+      channelId = null;
+      customeRoleStatus = false;
+    }
+    return {prefix, channelId, customeRoleStatus};
   }
 
-  async getPreferredChannel(message) {
-    let channelId;
-    if (message.channel.type!="dm") {
-      let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
-
-      if (!guild) {
-        let newGuild = {
-          server: {
-            serverID: message.guild.id,
-            prefix: this.config.defaultPrefix
-          }
-        }
-        this.dbo.collection("prefixes").insertOne(newGuild, function(err, res) {
-          if (err) throw err;
-        });
-        prefix = newGuild.server.serverID;
-      } else channelId = guild.server.preferredChannelId;
-    } else channelId = null;
-    return channelId;
+  async checkRoleStatus(message) {
+    let hasRole = false;
+    let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+    // If user has one of any in the list of allowed roles, hasRole is true
+    for (let i = 0; i < guild.server.allowedRoles.length; i++) {
+      if (message.member.roles.cache.some(role => role.id == guild.server.allowedRoles[i])) hasRole = true;
+    }
+    return hasRole;
   }
 
   main() {
@@ -484,131 +550,210 @@ class Bot {
 
     // Basic Commands
     client.on('message', async (message) => {
-      this.getPrefix(message).then(prefix => {
-        if (!message.content.startsWith(prefix) || message.author.bot) return;
+      let { prefix, channelId, customeRoleStatus } = await this.getGuildPresets(message);
+      if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-        this.getPreferredChannel(message).then(channelId => {
-          if (channelId != null && message.channel.id!=channelId) {
-            return message.channel.send(`This is not the preferred channel, please use the channel <#${channelId}> ${message.author}!`);
+      if (channelId != null && message.channel.id!=channelId) {
+        return message.channel.send(`This is not the preferred channel, please use the channel <#${channelId}> ${message.author}!`);
+      }
+      const args = message.content.slice(prefix.length).trim().split(' ');
+      const command = args.shift().toLowerCase();
+
+      // Valid Statuses Embed
+      const validStatus = new Discord.MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle('Lines Police CAD')
+        .setURL('https://www.linespolice-cad.com/')
+        .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+        .setDescription('Valid Statuses')
+        .addFields(
+          { name: 'Statuses:', value: `
+            10-8   |  \`On Duty\`
+            10-7   |  \`Off Duty\`
+            10-6   |  \`Busy\`
+            10-11  |  \`Traffic Stop\`
+            10-23  |  \`Arrive on Scene\`
+            10-97  |  \`In Route\`
+            10-15  |  \`Subject in Custody\`
+            10-70  |  \`Foot Pursuit\`
+            10-80  |  \`Vehicle Pursiut\`
+            `
+          }    
+        )
+
+      // Help Embed
+      const help = new Discord.MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle('**Commands:**')
+        .setURL('https://discord.gg/w2g2FFmHbF')
+        .setAuthor('LPS Website & Bot Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+        .setDescription('Lines Police CAD Bot Commands')
+        .addFields(
+          { name: `**${prefix}help**`, value: '\`Displays this help page\`', inline: true },
+          { name: `**${prefix}stats**`, value: '\`Displays current Bot status\`', inline: true }, 
+          { name: `**${prefix}ping**`, value: '\`Responds with Pong to check Bot responce\`', inline: true },
+          { name: `**${prefix}setPrefix** <new prefix>`, value: '\`Sets new prefix (Admin only command)\`', inline: true },
+          { name: `**${prefix}login** <email> <login token>`, value: '\`Login to LPS account (DM only command)\`', inline: true },
+          { name: `**${prefix}logout**`, value: '\`Logs out of your current logged in account\`', inline: true },
+          { name: `**${prefix}validStatus**`, value: '\`Shows list of valid statuses to updade to\`', inline: true },
+          { name: `**${prefix}checkStatus** <user>`, value: '\`Leave user blank to check own status\`', inline: true },
+          { name: `**${prefix}updateStatus** <status>`, value: '\`Updates your status\`', inline: true },
+          { name: `**${prefix}account**`, value: '\`returns logged in account\`', inline: true },
+          { name: `**${prefix}penalCodes**`, value: '\`Provides Link to penal codes\`', inline: true },
+          { name: `**${prefix}namedb** <firstName> <lastName> <dob>`, value: '\`Searches in your community for name (dob only required if not in a community)\`', inline: true },
+          { name: `**${prefix}platedb** <licence plate #>`, value: '\`Searches in your community for Vehicles with the given Licence plate #\`', inline: true },
+          { name: `**${prefix}firearmdb** <Serial #>`, value: '\`Searches for Firearms with the given Serial #\`', inline: true },
+          { name: `**${prefix}panic**`, value: '\`Enables or disables your panic button\`', inline: true },
+          { name: `**${prefix}joincommunity** <community code>`, value: '\`Joined a community with the given code\`', inline: true },
+          { name: `**${prefix}leavecommunity**`, value: '\`Leaves your current active community\`', inline: true },
+          { name: `**${prefix}community**`, value: '\`Returns the name of the Community your currenty in\`', inline: true },
+          { name: `**${prefix}setChannel** <channel>`, value: `\`Sets preferred channel allowed for commands (Admin only command)\``, inline: true },
+          { name: `**${prefix}removeChannel**`, value: `\`Removes preferred channel (Admin only command)\``, inline: true },
+          { name: `**${prefix}setRole <role>**`, value: `\`Adds role to list of allowed roles (Admin only command)\``, inline: true },
+          { name: `**${prefix}removeRole <role>**`, value: `\`Removes role from list of allowed roles (Admin only command)\``, inline: true },
+          { name: `**${prefix}roles**`, value: `\`Shows a list of allowed roles\``, inline: true }
+        )
+
+      const stats = new Discord.MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle("Current LPC-Bot Statistics")
+          .setURL('https://discord.gg/w2g2FFmHbF')
+          .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
+          .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
+          .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")
+
+      if (command == 'ping') message.channel.send('Pong!');
+      if (command == 'help') message.channel.send(help);
+      if (command == 'stats') message.channel.send(stats);
+      if (command == 'setprefix') {
+        if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}!`);
+        if(!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
+        this.newPrefix(message, args);
+      }
+      if (command == 'setchannel') {
+        if (message.channel.type=="dm") return message.author.send(`You cannot set a channel in a dm ${message.author}!`);
+        if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
+        this.setChannel(message, args);
+      }
+      if (command == 'removechannel') {
+        if (message.channel.type=="dm") return message.author.send(`You cannot remove a channel in a dm ${message.author}!`);
+        if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
+        this.removeChannel(message); 
+      }
+      if (command == 'setrole') {
+        if (message.channel.type=="dm") return message.author.send(`You cannot set a role in a dm ${message.author}!`);
+        if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
+        this.setRole(message, args); 
+      }
+      if (command == 'removerole') {
+        if (message.channel.type=="dm") return message.author.send(`You cannot remove a role in a dm ${message.author}!`);
+        if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
+        this.removeRole(message, args); 
+      }
+      if (command == 'roles') {
+        if (message.channel.type=="dm") return message.author.send(`You cannot see allowed roles in a dm ${message.author}!`);
+        this.roles(message);
+      }
+
+      // Login
+      if (command == 'login') {
+        if (message.channel.type=="text") return message.channel.send(`You must direct message me to use this command ${message.author}!`);
+        this.remoteLogin(message, args);
+      }
+      if (command == 'logout') this.remoteLogout(message);
+      if (command == 'validstatus') message.channel.send(validStatus);
+      if (command == 'checkstatus') {
+        if (customeRoleStatus) {
+          let hasRole = await this.checkRoleStatus(message);
+          if (hasRole) {
+            this.checkStatus(message, args);
+          } else {
+            return message.channel.send(`You don't permission to use this command ${message.author}!`);
           }
-          const args = message.content.slice(prefix.length).trim().split(' ');
-          const command = args.shift().toLowerCase();
-
-          // Valid Statuses Embed
-          const validStatus = new Discord.MessageEmbed()
-            .setColor('#0099ff')
-            .setTitle('Lines Police CAD')
-            .setURL('https://www.linespolice-cad.com/')
-            .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
-            .setDescription('Valid Statuses')
-            .addFields(
-              { name: 'Statuses:', value: `
-                10-8   |  \`On Duty\`
-                10-7   |  \`Off Duty\`
-                10-6   |  \`Busy\`
-                10-11  |  \`Traffic Stop\`
-                10-23  |  \`Arrive on Scene\`
-                10-97  |  \`In Route\`
-                10-15  |  \`Subject in Custody\`
-                10-70  |  \`Foot Pursuit\`
-                10-80  |  \`Vehicle Pursiut\`
-                `
-              }    
-            )
-
-          // Help Embed
-          const help = new Discord.MessageEmbed()
-            .setColor('#0099ff')
-            .setTitle('**Commands:**')
-            .setURL('https://discord.gg/w2g2FFmHbF')
-            .setAuthor('LPS Website & Bot Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
-            .setDescription('Lines Police CAD Bot Commands')
-            .addFields(
-              { name: `**${prefix}help**`, value: '\`Displays this help page\`', inline: true },
-              { name: `**${prefix}stats**`, value: '\`Displays current Bot status\`', inline: true }, 
-              { name: `**${prefix}ping**`, value: '\`Responds with Pong to check Bot responce\`', inline: true },
-              { name: `**${prefix}setPrefix** <new prefix>`, value: '\`Sets new prefix (Admin only command)\`', inline: true },
-              { name: `**${prefix}login** <email> <login token>`, value: '\`Login to LPS account (DM only command)\`', inline: true },
-              { name: `**${prefix}logout**`, value: '\`Logs out of your current logged in account\`', inline: true },
-              { name: `**${prefix}validStatus**`, value: '\`Shows list of valid statuses to updade to\`', inline: true },
-              { name: `**${prefix}checkStatus** <user>`, value: '\`Leave user blank to check own status\`', inline: true },
-              { name: `**${prefix}updateStatus** <status>`, value: '\`Updates your status\`', inline: true },
-              { name: `**${prefix}account**`, value: '\`returns logged in account\`', inline: true },
-              { name: `**${prefix}penalCodes**`, value: '\`Provides Link to penal codes\`', inline: true },
-              { name: `**${prefix}namedb** <firstName> <lastName> <dob>`, value: '\`Searches in your community for name (dob only required if not in a community)\`', inline: true },
-              { name: `**${prefix}platedb** <licence plate #>`, value: '\`Searches in your community for Vehicles with the given Licence plate #\`', inline: true },
-              { name: `**${prefix}firearmdb** <Serial #>`, value: '\`Searches for Firearms with the given Serial #\`', inline: true },
-              { name: `**${prefix}panic**`, value: '\`Enables or disables your panic button\`', inline: true },
-              { name: `**${prefix}joincommunity** <community code>`, value: '\`Joined a community with the given code\`', inline: true },
-              { name: `**${prefix}leavecommunity**`, value: '\`Leaves your current active community\`', inline: true },
-              { name: `**${prefix}community**`, value: '\`Returns the name of the Community your currenty in\`', inline: true },
-              { name: `**${prefix}setChannel** <channel>`, value: `\`Sets preferred channel allowed for commands (Admin only command)\``, inline: true },
-              { name: `**${prefix}removeChannel**`, value: `\`Removes preferred channel (Admin only command)\``, inline: true }
-            )
-
-          const stats = new Discord.MessageEmbed()
-              .setColor('#0099ff')
-              .setTitle("Current LPC-Bot Statistics")
-              .setURL('https://discord.gg/w2g2FFmHbF')
-              .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
-              .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
-              .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")
-
-          if (command == 'ping') message.channel.send('Pong!');
-          if (command == 'help') message.channel.send(help);
-          if (command == 'stats') message.channel.send(stats);
-          if (command == 'setprefix') {
-            if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}!`);
-            if(!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
-            this.newPrefix(message, args);
+        } else {
+          this.checkStatus(message, args);
+        }
+      }
+      if (command == 'updatestatus') {
+        if (customeRoleStatus) {
+          let hasRole = await this.checkRoleStatus(message);
+          if (hasRole) {
+            this.updateStatus(message, args, prefix);
+          } else {
+            return message.channel.send(`You don't permission to use this command ${message.author}!`);
           }
-          if (command == 'setchannel') {
-            if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}!`);
-            if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
-            this.setChannel(message, args);
+        } else {
+          this.updateStatus(message, args, prefix);
+        }
+      }
+      if (command == 'account') this.account(message);
+      if (command == 'penalcodes') return message.channel.send('https://www.linespolice-cad.com/penal-code');
+      if (command == 'namedb') {
+        if (customeRoleStatus) {
+          let hasRole = await this.checkRoleStatus(message);
+          if (hasRole) {
+            this.nameSearch(message, args);
+          } else {
+            return message.channel.send(`You don't permission to use this command ${message.author}!`);
           }
-          if (command == 'removechannel') {
-            if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}!`);
-            if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
-            this.removeChannel(message); 
+        } else {
+          this.nameSearch(message, args);
+        }
+      }
+      if (command == 'platedb') {
+        if (customeRoleStatus) {
+          let hasRole = await this.checkRoleStatus(message);
+          if (hasRole) {
+            this.plateSearch(message, args);
+          } else {
+            return message.channel.send(`You don't permission to use this command ${message.author}!`);
           }
+        } else {
+          this.plateSearch(message, args);
+        }
+      }
+      if (command == 'firearmdb') {
+        if (customeRoleStatus) {
+          let hasRole = await this.checkRoleStatus(message);
+          if (hasRole) {
+            this.firearmSearch(message, args);
+          } else {
+            return message.channel.send(`You don't permission to use this command ${message.author}!`);
+          }
+        } else {
+          this.firearmSearch(message, args);
+        }
+      }
+      if (command == 'panic') {
+        if (customeRoleStatus) {
+          let hasRole = await this.checkRoleStatus(message);
+          if (hasRole) {
+            this.enablePanic(message);
+          } else {
+            return message.channel.send(`You don't permission to use this command ${message.author}!`);
+          }
+        } else {
+          this.enablePanic(message);
+        }
+      }
+      if (command == 'joincommunity') this.joinCommunity(message, args);
+      if (command == 'leavecommunity') this.leaveCommunity(message);
+      if (command == 'community') this.community(message);
 
-          // Login
-          if (command == 'login') {
-            if (message.channel.type=="text") return message.channel.send(`You must direct message me to use this command ${message.author}!`);
-            this.remoteLogin(message, args);
-          }
-          if (command == 'logout') this.remoteLogout(message);
-          if (command == 'validstatus') message.channel.send(validStatus);
-          if (command == 'checkstatus') this.checkStatus(message, args);
-          if (command == 'updatestatus') this.updateStatus(message, args, prefix);
-          if (command == 'account') this.account(message);
-          if (command == 'penalcodes') return message.channel.send('https://www.linespolice-cad.com/penal-code');
-          if (command == 'namedb') this.nameSearch(message, args);
-          if (command == 'platedb') this.plateSearch(message, args);
-          if (command == 'firearmdb') this.firearmSearch(message, args);
-          if (command == 'panic') this.enablePanic(message);
-          if (command == 'joincommunity') this.joinCommunity(message, args);
-          if (command == 'leavecommunity') this.leaveCommunity(message);
-          if (command == 'community') this.community(message);
-
-          // Dev Commands (not visible in help) && easter egg commands
-          if (command == 'version') message.channel.send(`**LPS-BOT Version : ${this.dev}-${this.config.version}**`)
-          if (command == 'whatisthemeaningoflife') message.channel.send('42');
-          if (command == 'whatareyou' || command == 'whoareyou') message.channel.send('Im your friendly neighborhood Lines Police CAD Bot');
-          if (command == 'whocreatedyou') message.channel.send('Lines Police CAD Developer McDazzzled | https://github.com/SowinskiBraeden');
-          if (command == 'pingserver') {
-            const socket = io.connect(this.config.socket);
-            socket.emit('botping', {message:'hello there'});
-            socket.on('botpong', (data) => {
-              console.log(data);
-              socket.disconnect();
-            });
-          }
+      // Dev Commands (not visible in help) && easter egg commands
+      if (command == 'version') message.channel.send(`**LPS-BOT Version : ${this.dev}-${this.config.version}**`)
+      if (command == 'whatisthemeaningoflife') message.channel.send('42');
+      if (command == 'whatareyou' || command == 'whoareyou') message.channel.send('Im your friendly neighborhood Lines Police CAD Bot');
+      if (command == 'whocreatedyou') message.channel.send('Lines Police CAD Developer McDazzzled | https://github.com/SowinskiBraeden');
+      if (command == 'pingserver') {
+        const socket = io.connect(this.config.socket);
+        socket.emit('botping', {message:'hello there'});
+        socket.on('botpong', (data) => {
+          console.log(data);
+          socket.disconnect();
         });
-      });
+      }
     });
-    
     client.login(this.token);
   }
 }
