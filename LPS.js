@@ -439,7 +439,7 @@ class Bot {
       return message.channel.send(`Uh Oh! The role ${args[0]} connot be found.`);
     } else {
       let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
-      if (guild.server.allowedRoles.length==0) return message.channel.send(`There are no roles to be removed ${message.author}!`);
+      if (guild.server.hasCustomRoles==false) return message.channel.send(`There are no roles to be removed ${message.author}!`);
       if (!guild.server.allowedRoles.includes(roleid)) return message.channel.send(`The role ${args[0]} is not added to your roles ${message.author}!`);
       for (let i = 0; i < guild.server.allowedRoles.length; i++) {
         if (guild.server.allowedRoles[i]==roleid) {
@@ -464,44 +464,75 @@ class Bot {
     if (guild.server.hasCustomRoles==false) {
       return message.channel.send('There are no roles set for the bot.');
     }
-    let rolesEmbed = new Discord.MessageEmbed()
-      .setColor('#0099ff')
-      .setTitle('Lines Police CAD')
-      .setURL('https://discord.gg/w2g2FFmHbF')
-      .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
-      .setDescription('Allowed Roles:')
 
     let roles = "Allowed Roles:";
     for (let i = 0; i < guild.server.allowedRoles.length; i++) {
       if (guild.server.allowedRoles[i] == undefined) break;
-      roles = roles + `\n<@&${guild.server.allowedRoles[i]}>`;
+      roles += `\n<@&${guild.server.allowedRoles[i]}>`;
     }
     return message.channel.send(roles);
   }
 
   async setChannel(message, args) {
     if (args.length==0) return message.channel.send(`You must provide a channel ${message.author}!`);
-    let channel = client.channels.cache.get(args[0].replace('<#', '').replace('>', ''));
+    let channelid = args[0].replace('<#', '').replace('>', '');
+    let channel = client.channels.cache.get(channelid);
     if (!channel) return message.channel.send(`Cannot find that channel ${message.author}!`);
     if (channel.type=="voice") return message.channel.send(`Connot set voice channel to preferred channel ${message.author}!`);
     if (channel.deleted) return message.channel.send(`Connot set deleted channel to preferred channel ${message.author}!`);
-    this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.preferredChannelId":channel.id}},function(err, res) {
+    let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+    if (guild.server.allowedChannels!=undefined&&guild.server.allowedChannels.includes(channelid)) return message.channel.send(`The channel ${args[0]} has already been added ${message.author}!`);
+    this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$push:{"server.allowedChannels":channelid},$set:{"server.hasCustomChannels":true}},function(err, res) {
       if (err) throw err;
-      return message.channel.send(`Successfuly set \` ${channel.name} \` to prefered channel ${message.author}!`);
+      return message.channel.send(`Successfuly added ${args[0]} to allowed channels ${message.author}!`);
     });
   }
 
-  async removeChannel(message) {
-    this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.preferredChannelId":null}},function(err, res) {
-      if (err) throw err;
-      return message.channel.send(`Successfuly removed preferred channel ${message.author}!`);
-    }); 
+  async removeChannel(message, args) {
+    if (args.length==0) return message.channel.send(`You must provide a channel ${message.author}!`);
+    let channelid = args[0].replace('<#', '').replace('>', '');
+    let channel = client.channels.cache.get(channelid);
+    if (!channel) return message.channel.send(`Uh Oh! The channel ${args[0]} connot be found.`);
+    let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+    if (guild.server.hasCustomChannels==false) return message.channel.send(`There are no channels to be removed ${message.author}!`);
+    if (!guild.server.allowedChannels.includes(channelid)) return message.channel.send(`The channel ${args[0]} is not added to your roles ${message.author}!`);
+    for (let i = 0; i < guild.server.allowedChannels.length; i++) {
+      if (guild.server.allowedChannels[i]==channelid) {
+        if ((guild.server.allowedChannels.length-1)==0) {
+          this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$pull:{"server.allowedChannels":channelid},$set:{"server.hasCustomChannels":false}},function(err, res) {
+            if (err) throw err;
+            return message.channel.send(`Successfuly removed ${args[0]} from allowed channels ${message.author}! There are no more allowed channels.`);
+          });  
+        } else if ((guild.server.allowedChannels.length-1)>0) {
+          this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$pull:{"server.allowedChannels":channelid}},function(err, res) {
+            if (err) throw err;
+            return message.channel.send(`Successfuly removed ${args[0]} from allowed channels ${message.author}!`);
+          });
+        }
+      }
+    }
+  }
+
+  async channels(message) {
+    let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+    if (guild.server.hasCustomChannels==false) {
+      return message.channel.send('There are no channels set for the bot.');
+    }
+
+    let channels = "Allowed Channels:";
+    for (let i = 0; i < guild.server.allowedChannels.length; i++) {
+      if (guild.server.allowedChannels[i] == undefined) break;
+      channels += `\n<#${guild.server.allowedChannels[i]}>`;
+    }
+    return message.channel.send(channels);
   }
 
   async getGuildPresets(message) {
     let prefix;
     let channelId;
-    let customeRoleStatus;
+    let customRoleStatus;
+    let customChannelStatus;
+    let allowedChannels;
     if (message.channel.type!="dm") {
       let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
 
@@ -511,26 +542,32 @@ class Bot {
           server: {
             serverID: message.guild.id,
             prefix: this.config.defaultPrefix,
-            hasCustomeRoles: false,
+            hasCustomRoles: false,
+            hasCustomChannels: false,
           }
         }
         this.dbo.collection("prefixes").insertOne(newGuild, function(err, res) {
           if (err) throw err;
         });
         prefix = newGuild.server.prefix;
-        channelId = newGuild.server.preferredChannelId;
-        customeRoleStatus = newGuild.server.hasCustomRoles;
+        customRoleStatus = newGuild.server.hasCustomRoles;
+        customChannelStatus = newGuild.server.hasCustomChannels;
+        allowedChannels = null;
       } else {
         prefix = guild.server.prefix;
-        channelId = guild.server.preferredChannelId;
-        customeRoleStatus = guild.server.hasCustomRoles;
+        customRoleStatus = guild.server.hasCustomRoles;
+        customChannelStatus = guild.server.hasCustomChannels;
+        if (guild.server.allowedChannels!=undefined||guild.server.allowedChannels!=null&&guild.server.allowedChannels.length>0) {
+          allowedChannels = guild.server.allowedChannels;
+        } else allowedChannels = null;
       }
     } else {
       prefix = this.config.defaultPrefix;
-      channelId = null;
-      customeRoleStatus = false;
+      customRoleStatus = false;
+      customChannelStatus = false;
+      allowedChannels = null;
     }
-    return {prefix, channelId, customeRoleStatus};
+    return {prefix, channelId, customRoleStatus, customChannelStatus, allowedChannels};
   }
 
   async checkRoleStatus(message) {
@@ -550,11 +587,11 @@ class Bot {
 
     // Basic Commands
     client.on('message', async (message) => {
-      let { prefix, channelId, customeRoleStatus } = await this.getGuildPresets(message);
+      let { prefix, channelId, customRoleStatus, customChannelStatus, allowedChannels } = await this.getGuildPresets(message);
       if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-      if (channelId != null && message.channel.id!=channelId) {
-        return message.channel.send(`This is not the preferred channel, please use the channel <#${channelId}> ${message.author}!`);
+      if (customChannelStatus==true&&!allowedChannels.includes(message.channel.id)) {
+        return message.channel.send(`This is not the preferred channel, please one of the allowed channels. Use \`${prefix}channels\` to see a list of allowed channels ${message.author}!`);
       }
       const args = message.content.slice(prefix.length).trim().split(' ');
       const command = args.shift().toLowerCase();
@@ -607,10 +644,11 @@ class Bot {
           { name: `**${prefix}joincommunity** <community code>`, value: '\`Joined a community with the given code\`', inline: true },
           { name: `**${prefix}leavecommunity**`, value: '\`Leaves your current active community\`', inline: true },
           { name: `**${prefix}community**`, value: '\`Returns the name of the Community your currenty in\`', inline: true },
-          { name: `**${prefix}setChannel** <channel>`, value: `\`Sets preferred channel allowed for commands (Admin only command)\``, inline: true },
-          { name: `**${prefix}removeChannel**`, value: `\`Removes preferred channel (Admin only command)\``, inline: true },
-          { name: `**${prefix}setRole <role>**`, value: `\`Adds role to list of allowed roles (Admin only command)\``, inline: true },
-          { name: `**${prefix}removeRole <role>**`, value: `\`Removes role from list of allowed roles (Admin only command)\``, inline: true },
+          { name: `**${prefix}setChannel** <channel>`, value: `\`Adds channel to list of allowed channels (Admin only command)\``, inline: true },
+          { name: `**${prefix}removeChannel** <channel>`, value: `\`Removes channel from list of allowed channels (Admin only command)\``, inline: true },
+          { name: `**${prefix}channels**`, value: `\`Shows a list of allowed channels\``, inline: true },
+          { name: `**${prefix}setRole** <role>`, value: `\`Adds role to list of allowed roles (Admin only command)\``, inline: true },
+          { name: `**${prefix}removeRole** <role>`, value: `\`Removes role from list of allowed roles (Admin only command)\``, inline: true },
           { name: `**${prefix}roles**`, value: `\`Shows a list of allowed roles\``, inline: true }
         )
 
@@ -638,7 +676,7 @@ class Bot {
       if (command == 'removechannel') {
         if (message.channel.type=="dm") return message.author.send(`You cannot remove a channel in a dm ${message.author}!`);
         if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
-        this.removeChannel(message); 
+        this.removeChannel(message, args); 
       }
       if (command == 'setrole') {
         if (message.channel.type=="dm") return message.author.send(`You cannot set a role in a dm ${message.author}!`);
@@ -654,6 +692,10 @@ class Bot {
         if (message.channel.type=="dm") return message.author.send(`You cannot see allowed roles in a dm ${message.author}!`);
         this.roles(message);
       }
+      if (command == 'channels') {
+        if (message.channel.tpye=="dm") return message.channel.send(`You cannot see allowed channels in a dm ${message.author}!`);
+        this.channels(message);
+      }
 
       // Login
       if (command == 'login') {
@@ -663,78 +705,54 @@ class Bot {
       if (command == 'logout') this.remoteLogout(message);
       if (command == 'validstatus') message.channel.send(validStatus);
       if (command == 'checkstatus') {
-        if (customeRoleStatus) {
+        if (customRoleStatus) {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.checkStatus(message, args);
-          } else {
-            return message.channel.send(`You don't permission to use this command ${message.author}!`);
-          }
-        } else {
-          this.checkStatus(message, args);
-        }
+          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+        } else this.checkStatus(message, args);
       }
       if (command == 'updatestatus') {
-        if (customeRoleStatus) {
+        if (customRoleStatus) {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.updateStatus(message, args, prefix);
-          } else {
-            return message.channel.send(`You don't permission to use this command ${message.author}!`);
-          }
-        } else {
-          this.updateStatus(message, args, prefix);
-        }
+          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+        } else this.updateStatus(message, args, prefix);
       }
       if (command == 'account') this.account(message);
       if (command == 'penalcodes') return message.channel.send('https://www.linespolice-cad.com/penal-code');
       if (command == 'namedb') {
-        if (customeRoleStatus) {
+        if (customRoleStatus) {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.nameSearch(message, args);
-          } else {
-            return message.channel.send(`You don't permission to use this command ${message.author}!`);
-          }
-        } else {
-          this.nameSearch(message, args);
-        }
+          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+        } else this.nameSearch(message, args);
       }
       if (command == 'platedb') {
-        if (customeRoleStatus) {
+        if (customRoleStatus) {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.plateSearch(message, args);
-          } else {
-            return message.channel.send(`You don't permission to use this command ${message.author}!`);
-          }
-        } else {
-          this.plateSearch(message, args);
-        }
+          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+        } else this.plateSearch(message, args);
       }
       if (command == 'firearmdb') {
-        if (customeRoleStatus) {
+        if (customRoleStatus) {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.firearmSearch(message, args);
-          } else {
-            return message.channel.send(`You don't permission to use this command ${message.author}!`);
-          }
-        } else {
-          this.firearmSearch(message, args);
-        }
+          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+        } else this.firearmSearch(message, args);
       }
       if (command == 'panic') {
-        if (customeRoleStatus) {
+        if (customRoleStatus) {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.enablePanic(message);
-          } else {
-            return message.channel.send(`You don't permission to use this command ${message.author}!`);
-          }
-        } else {
-          this.enablePanic(message);
-        }
+          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+        } else this.enablePanic(message);
       }
       if (command == 'joincommunity') this.joinCommunity(message, args);
       if (command == 'leavecommunity') this.leaveCommunity(message);
