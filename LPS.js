@@ -326,8 +326,8 @@ class Bot {
     const socket = io.connect(this.config.socket);
     socket.emit('bot_update_status', req);
     socket.on('bot_updated_status', (res) => {
-        message.channel.send(`Succesfully updated status to \`${args[0]}\` ${message.author}!`);
-        socket.disconnect();
+      message.channel.send(`Succesfully updated status to \`${args[0]}\` ${message.author}!`);
+      socket.disconnect();
     });
   }
 
@@ -335,26 +335,13 @@ class Bot {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
     if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command ${message.author}!`);
-    // If panic isn't enabled, enable panic
-    if (user.user.dispatchStatus!='Panic') {
-      this.updateStatus(message, ['Panic'], null);
-      let myReq = {
-        userID: user._id,
-        userUsername: user.user.username,
-        activeCommunity: user.user.activeCommunity
-      }
-      const socket = io.connect(this.config.socket);
-      socket.emit('botping');
-      socket.emit('panic_button_update', myReq);
-      socket.disconnect()
-      return message.channel.send(`Enabled Panic ${message.author}!`);
-    // If panic is enabled, set status to Online (panic off)
-    } else if (user.user.dispatchStatus=='Panic') {
+    const socket = io.connect(this.config.socket);
+    // If panic is enabled, disable panic
+    if (user.user.dispatchStatus=='Panic') {
       let myReq = {
         userID: user._id,
         communityID: user.user.activeCommunity
       };
-      const socket = io.connect(this.config.socket);
       socket.emit('clear_panic', myReq);
 
       let myUpdateReq = {
@@ -364,9 +351,25 @@ class Bot {
         onDuty: null,
         updateDuty: false
       };
-      socket.emit('update_status', myUpdateReq);
-      socket.disconnect()
-      return message.channel.send(`Disabled Panic ${message.author} and set status to \`10-8\`.`);
+      socket.emit('bot_update_status', myUpdateReq);
+      socket.on('bot_updated_status', (res) => { 
+        message.channel.send(`Disabled Panic ${message.author} and set status to \`10-8\`.`);
+        socket.disconnect();
+      });
+      return;
+    // If panic is disabled, enable panic
+    } else {
+      this.updateStatus(message, ['Panic'], null);
+      let myReq = {
+        userID: user._id,
+        userUsername: user.user.username,
+        activeCommunity: user.user.activeCommunity
+      }
+      socket.emit('panic_button_update', myReq);
+      socket.disconnect();
+      let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+      if (guild.server.pingOnPanic) return message.channel.send(`Attention <@&${guild.server.pingRole}>! \`${user.user.username}\` has activated panic!`);
+      return;
     }
   }
 
@@ -426,7 +429,7 @@ class Bot {
       if (guild.server.allowedRole!=undefined&&guild.server.allowedRoles.includes(roleid)) return message.channel.send(`The role ${args[0]} has already been added ${message.author}!`);
       this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$push:{"server.allowedRoles":roleid},$set:{"server.hasCustomRoles":true}},function(err, res) {
         if (err) throw err;
-        return message.channel.send(`Successfuly added ${args[0]} to allowed roles ${message.author}!`);
+        return message.channel.send(`Successfully added ${args[0]} to allowed roles ${message.author}!`);
       });
     }
   }
@@ -446,12 +449,12 @@ class Bot {
           if ((guild.server.allowedRoles.length-1)==0) {
             this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$pull:{"server.allowedRoles":roleid},$set:{"server.hasCustomRoles":false}},function(err, res) {
               if (err) throw err;
-              return message.channel.send(`Successfuly removed ${args[0]} from allowed roles ${message.author}! There are no more allowed roles.`);
+              return message.channel.send(`Successfully removed ${args[0]} from allowed roles ${message.author}! There are no more allowed roles.`);
             });  
           } else if ((guild.server.allowedRoles.length-1)>0) {
             this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$pull:{"server.allowedRoles":roleid}},function(err, res) {
               if (err) throw err;
-              return message.channel.send(`Successfuly removed ${args[0]} from allowed roles ${message.author}!`);
+              return message.channel.send(`Successfully removed ${args[0]} from allowed roles ${message.author}!`);
             });
           }
         }
@@ -484,7 +487,7 @@ class Bot {
     if (guild.server.allowedChannels!=undefined&&guild.server.allowedChannels.includes(channelid)) return message.channel.send(`The channel ${args[0]} has already been added ${message.author}!`);
     this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$push:{"server.allowedChannels":channelid},$set:{"server.hasCustomChannels":true}},function(err, res) {
       if (err) throw err;
-      return message.channel.send(`Successfuly added ${args[0]} to allowed channels ${message.author}!`);
+      return message.channel.send(`Successfully added ${args[0]} to allowed channels ${message.author}!`);
     });
   }
 
@@ -501,12 +504,12 @@ class Bot {
         if ((guild.server.allowedChannels.length-1)==0) {
           this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$pull:{"server.allowedChannels":channelid},$set:{"server.hasCustomChannels":false}},function(err, res) {
             if (err) throw err;
-            return message.channel.send(`Successfuly removed ${args[0]} from allowed channels ${message.author}! There are no more allowed channels.`);
+            return message.channel.send(`Successfully removed ${args[0]} from allowed channels ${message.author}! There are no more allowed channels.`);
           });  
         } else if ((guild.server.allowedChannels.length-1)>0) {
           this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$pull:{"server.allowedChannels":channelid}},function(err, res) {
             if (err) throw err;
-            return message.channel.send(`Successfuly removed ${args[0]} from allowed channels ${message.author}!`);
+            return message.channel.send(`Successfully removed ${args[0]} from allowed channels ${message.author}!`);
           });
         }
       }
@@ -580,6 +583,33 @@ class Bot {
     return hasRole;
   }
 
+  async togglePingOnPanic(message, args) {
+    if (args.length==0) return message.channel.send(`You must provide a \`Ping On Role Status\` and a \`role\` to ping ${message.author}!`);  
+    if (args[0]=="false") {
+      // disable ping on panic and remove ping role
+      this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.pingOnPanic":false,"server.pingRole":null}},function(err, res) {
+        if (err) throw err;
+        return message.channel.send(`Successfully disabled ping role on panic ${message.author}!`);
+      });
+    } else if (args[0]=="true") {
+      let roleid = args[1].replace('<@&', '').replace('>', '');
+      let role = message.guild.roles.cache.find(x => x.id == roleid);
+      if (role == undefined) {
+        return message.channel.send(`Uh Oh! The role ${args[1]} connot be found.`);
+      } else {
+        this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.pingRole":roleid,"server.pingOnPanic":true}},function(err, res) {
+          if (err) throw err;
+          return message.channel.send(`Successfully set ${args[1]} to be pinged on panic ${message.author}!`);
+        });
+      }
+    } else return message.channel.send(`\`${args[0]}\` is an invalid status, use \`true\` or \`false\` ${message.author}!`);
+  }
+
+  async getPingOnPanicStatus(message) {
+    let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+    return message.channel.send(`Current Ping on Panic Status: ${guild.server.pingOnPanic} ${message.author}`);
+  }
+
   main() {
     client.on('ready', () => {
       console.log(`Logged in as ${client.user.tag}`);
@@ -649,7 +679,8 @@ class Bot {
           { name: `**${prefix}channels**`, value: `\`Shows a list of allowed channels\``, inline: true },
           { name: `**${prefix}setRole** <role>`, value: `\`Adds role to list of allowed roles (Admin only command)\``, inline: true },
           { name: `**${prefix}removeRole** <role>`, value: `\`Removes role from list of allowed roles (Admin only command)\``, inline: true },
-          { name: `**${prefix}roles**`, value: `\`Shows a list of allowed roles\``, inline: true }
+          { name: `**${prefix}roles**`, value: `\`Shows a list of allowed roles\``, inline: true },
+          { name: `**${prefix}togglePingOnPanic** <true|false> <role>`, value: `\`Enables or disabled ping role on panic (Admin only command)\``, inline: true }
         )
 
       const stats = new Discord.MessageEmbed()
@@ -688,6 +719,11 @@ class Bot {
         if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
         this.removeRole(message, args); 
       }
+      if (command == 'togglepingonpanic') {
+        if (message.channel.type=="dm") return message.author.send(`You cannot remove a role in a dm ${message.author}!`);
+        if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
+        this.togglePingOnPanic(message, args);
+      }
       if (command == 'roles') {
         if (message.channel.type=="dm") return message.author.send(`You cannot see allowed roles in a dm ${message.author}!`);
         this.roles(message);
@@ -695,6 +731,10 @@ class Bot {
       if (command == 'channels') {
         if (message.channel.tpye=="dm") return message.channel.send(`You cannot see allowed channels in a dm ${message.author}!`);
         this.channels(message);
+      }
+      if (command == 'pingonpanic') {
+        if (message.channel.type=="dm") return message.channel.send(`You cannot see allowed channels in a dm ${message.author}!`);
+        this.getPingOnPanicStatus(message);
       }
 
       // Login
