@@ -373,7 +373,7 @@ class Bot {
     }
   }
 
-  async revokeLicense(message, args) {
+  async updateLicense(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
     let data;
@@ -382,10 +382,12 @@ class Bot {
       if (args.length==1) return message.channel.send(`You're missing a \`First Name\`, \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}!`);
       if (args.length==2) return message.channel.send(`You're missing a \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}!`);
       if (args.length==3) return message.channel.send(`You're missing a \`DOB\`(yyyy-mm-dd) ${message.author}!`);
+      if (args[0].toLowerCase()!='revoke'&&args[0].toLowerCase()!='reinstate') return message.channel.send(`Invalid License Status, choose \`revoke\` or \`reinstate\` ${message.author}!`);
     }
     if (args.length==0) return message.channel.send(`You must provide a \`License Status\`, \`First Name\` and \`Last Name\` ${message.author}!`);
     if (args.length==1) return message.channel.send(`You're missing a \`First Name\` and \`Last Name\` ${message.author}!`);
     if (args.length==2) return message.channel.send(`You're missing a \`Last Name\` ${message.author}!`);
+    if (args[0].toLowerCase()!='revoke'&&args[0].toLowerCase()!='reinstate') return message.channel.send(`Invalid License Status, choose \`revoke\` or \`reinstate\` ${message.author}!`);
 
     if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
       data = {
@@ -413,7 +415,7 @@ class Bot {
     socket.on("bot_name_search_results", (results) => {
       if (results.user._id==user._id) {
         if (results.civilians.length == 0) {
-          return message.channel.send(`Name \`${args[0]} ${args[1]}\` not found ${message.author}`);
+          return message.channel.send(`Name \`${args[1]} ${args[2]}\` not found ${message.author}`);
         }
       }
 
@@ -426,8 +428,8 @@ class Bot {
       if (args[0]=='reinstate') query.status = 1;
       socket.emit("update_drivers_license_status", query);
       socket.on("bot_updated_drivers_license_status", (res) => {
-        if (!res.success) return message.channel.send(`Failed to update license of ${args[0]} ${args[1]} ${message.author}`);
-        message.channel.send(`Successfully updated license of ${args[0]} ${args[1]} ${message.author}`);
+        if (!res.success) return message.channel.send(`Failed to update license of \`${args[1]} ${args[2]}\` ${message.author}`);
+        message.channel.send(`Successfully updated license of \`${args[1]} ${args[2]}\` ${message.author}`);
         socket.disconnect();
         return;
       });
@@ -887,9 +889,9 @@ class Bot {
         if (customRoleStatus) {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
-            this.revokeLicense(message, args);
+            this.updateLicense(message, args);
           } else return message.channel.send(`You don't have permission to use this command ${message.author}! `);
-        } else this.revokeLicense(message, args);
+        } else this.updateLicense(message, args);
       }
       if (command == 'joincommunity') this.joinCommunity(message, args);
       if (command == 'leavecommunity') this.leaveCommunity(message);
