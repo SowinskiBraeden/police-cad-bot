@@ -373,6 +373,67 @@ class Bot {
     }
   }
 
+  async revokeLicense(message, args) {
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    let data;
+    if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
+      if (args.length==0) return message.channel.send(`You must provide a \`License Status\`, \`First Name\`, \`Last Name\`, \`DOB\`(yyyy-mm-dd) ${message.author}!`);
+      if (args.length==1) return message.channel.send(`You're missing a \`First Name\`, \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}!`);
+      if (args.length==2) return message.channel.send(`You're missing a \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}!`);
+      if (args.length==3) return message.channel.send(`You're missing a \`DOB\`(yyyy-mm-dd) ${message.author}!`);
+    }
+    if (args.length==0) return message.channel.send(`You must provide a \`License Status\`, \`First Name\` and \`Last Name\` ${message.author}!`);
+    if (args.length==1) return message.channel.send(`You're missing a \`First Name\` and \`Last Name\` ${message.author}!`);
+    if (args.length==2) return message.channel.send(`You're missing a \`Last Name\` ${message.author}!`);
+
+    if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
+      data = {
+        user: user,
+        query: {
+          firstName: args[1],
+          lastName: args[2],
+          dateOfBirth: args[3],
+          activeCommunityID: user.user.activeCommunity
+        }
+      }
+    } else {
+      data = {
+        user: user,
+        query: {
+          firstName: args[1],
+          lastName: args[2],
+          activeCommunityID: user.user.activeCommunity
+        }
+      }
+    }
+
+    const socket = io.connect(this.config.socket);
+    socket.emit("bot_name_search", data);
+    socket.on("bot_name_search_results", (results) => {
+      if (results.user._id==user._id) {
+        if (results.civilians.length == 0) {
+          return message.channel.send(`Name \`${args[0]} ${args[1]}\` not found ${message.author}`);
+        }
+      }
+
+      let query = {
+        _id: results.civilians[0]._id,
+        status: null,
+        bot_request: true
+      };
+      if (args[0]=='revoke') query.status = 2;
+      if (args[0]=='reinstate') query.status = 1;
+      socket.emit("update_drivers_license_status", query);
+      socket.on("bot_updated_drivers_license_status", (res) => {
+        if (!res.success) return message.channel.send(`Failed to update license of ${args[0]} ${args[1]} ${message.author}`);
+        message.channel.send(`Successfully updated license of ${args[0]} ${args[1]} ${message.author}`);
+        socket.disconnect();
+        return;
+      });
+    });
+  }
+
   async joinCommunity(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
@@ -655,33 +716,61 @@ class Bot {
         .setURL('https://discord.gg/w2g2FFmHbF')
         .setAuthor('LPS Website & Bot Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
         .setDescription('Lines Police CAD Bot Commands')
-        .addFields(
-          { name: `**${prefix}help**`, value: '\`Displays this help page\`', inline: true },
-          { name: `**${prefix}stats**`, value: '\`Displays current Bot status\`', inline: true }, 
-          { name: `**${prefix}ping**`, value: '\`Responds with Pong to check Bot responce\`', inline: true },
-          { name: `**${prefix}setPrefix** <new prefix>`, value: '\`Sets new prefix (Admin only command)\`', inline: true },
-          { name: `**${prefix}login** <email> <login token>`, value: '\`Login to LPS account (DM only command)\`', inline: true },
-          { name: `**${prefix}logout**`, value: '\`Logs out of your current logged in account\`', inline: true },
-          { name: `**${prefix}validStatus**`, value: '\`Shows list of valid statuses to updade to\`', inline: true },
-          { name: `**${prefix}checkStatus** <user>`, value: '\`Leave user blank to check own status\`', inline: true },
-          { name: `**${prefix}updateStatus** <status>`, value: '\`Updates your status\`', inline: true },
-          { name: `**${prefix}account**`, value: '\`returns logged in account\`', inline: true },
-          { name: `**${prefix}penalCodes**`, value: '\`Provides Link to penal codes\`', inline: true },
-          { name: `**${prefix}namedb** <firstName> <lastName> <dob>`, value: '\`Searches in your community for name (dob only required if not in a community)\`', inline: true },
-          { name: `**${prefix}platedb** <licence plate #>`, value: '\`Searches in your community for Vehicles with the given Licence plate #\`', inline: true },
-          { name: `**${prefix}firearmdb** <Serial #>`, value: '\`Searches for Firearms with the given Serial #\`', inline: true },
-          { name: `**${prefix}panic**`, value: '\`Enables or disables your panic button\`', inline: true },
-          { name: `**${prefix}joincommunity** <community code>`, value: '\`Joined a community with the given code\`', inline: true },
-          { name: `**${prefix}leavecommunity**`, value: '\`Leaves your current active community\`', inline: true },
-          { name: `**${prefix}community**`, value: '\`Returns the name of the Community your currenty in\`', inline: true },
-          { name: `**${prefix}setChannel** <channel>`, value: `\`Adds channel to list of allowed channels (Admin only command)\``, inline: true },
-          { name: `**${prefix}removeChannel** <channel>`, value: `\`Removes channel from list of allowed channels (Admin only command)\``, inline: true },
-          { name: `**${prefix}channels**`, value: `\`Shows a list of allowed channels\``, inline: true },
-          { name: `**${prefix}setRole** <role>`, value: `\`Adds role to list of allowed roles (Admin only command)\``, inline: true },
-          { name: `**${prefix}removeRole** <role>`, value: `\`Removes role from list of allowed roles (Admin only command)\``, inline: true },
-          { name: `**${prefix}roles**`, value: `\`Shows a list of allowed roles\``, inline: true },
-          { name: `**${prefix}togglePingOnPanic** <true|false> <role>`, value: `\`Enables or disabled ping role on panic (Admin only command)\``, inline: true }
-        )
+        .addFields({
+          name: `**__Bot Commands:__**`,
+          value: `
+          **${prefix}help** - \`Displays this help page\`
+          **${prefix}stats** - \`Displays current Bot statistics\`
+          **${prefix}ping** - \`Responds with Pong to check Bot responce\`
+          `,
+          inline: false
+        },
+        {
+          name: `**__LPC Commands (1/2):__**`,
+          value: `
+          **${prefix}login** <email> <login token> - \`Login to LPS account (DM only command)\`
+          **${prefix}logout** - \`Logs out of your current logged in account\`
+          **${prefix}validStatus** - \`Shows list of valid statuses to updade to\`
+          **${prefix}checkStatus** <user> - \`Check your own or other status\`
+          **${prefix}updateStatus** <status> - \`Updates your status\`
+          **${prefix}account** - \`returns logged in account\`
+          **${prefix}penalCodes** - \`Provides Link to penal codes\`
+          **${prefix}namedb** <firstName> <lastName> <dob> - \`Searches for Civilian by Name\`
+          **${prefix}platedb** <licence plate #> - \`Searches for Vehicle by Licence Plate #\`
+          **${prefix}firearmdb** <Serial #> - \`Searches for Firearms by Serial #\`
+          **${prefix}panic** - \`Enables/Disables your panic button\`
+          **${prefix}joincommunity** <community code> - \`Joins a community with the given code\`
+          **${prefix}leavecommunity** - \`Leaves your current active community\`
+          `,
+          inline: true
+        },
+        {
+          name: `**__LPC Command (2/2):__**`,
+          value: `
+          **${prefix}community** - \`Returns the name of the Community your currenty in\`
+          **${prefix}channels** - \`Shows a list of allowed channels\`
+          **${prefix}roles** - \`Shows a list of allowed roles\`
+          **${prefix}license** <revoke|reinstate> <firstName> <lastName> <dob> - \`Revoke/Reinstate License\`
+          **${prefix}channels** - \`Shows a list of allowed channels\`
+          **${prefix}roles** - \`Shows a list of allowed roles\`
+          **${prefix}joincommunity** <community code> - \`Joins a community with the given code\`
+          **${prefix}leavecommunity** - \`Leaves your current active community\`
+          **${prefix}community** - \`Returns the name of the Community your currenty in\`
+          `,
+          inline: false
+        },
+        {
+          name: `**__Admin Commands:__**`,
+          value: `
+          **${prefix}setPrefix** <new prefix> - \`Sets new prefix\`
+          **${prefix}setChannel** <channel> - \`Adds channel to list of allowed channels\`
+          **${prefix}removeChannel** <channel> - \`Removes channel from list of allowed channels\`
+          **${prefix}setRole** <role> - \`Adds role to list of allowed roles\`
+          **${prefix}removeRole** <role> - \`Removes role from list of allowed roles\`
+          **${prefix}togglePingOnPanic** <true|false> <role> - \`Enable/disable ping role on panic\`
+          `,
+          inline: false
+        })
 
       const stats = new Discord.MessageEmbed()
           .setColor('#0099ff')
@@ -749,7 +838,7 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.checkStatus(message, args);
-          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
         } else this.checkStatus(message, args);
       }
       if (command == 'updatestatus') {
@@ -757,7 +846,7 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.updateStatus(message, args, prefix);
-          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
         } else this.updateStatus(message, args, prefix);
       }
       if (command == 'account') this.account(message);
@@ -767,7 +856,7 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.nameSearch(message, args);
-          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
         } else this.nameSearch(message, args);
       }
       if (command == 'platedb') {
@@ -775,7 +864,7 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.plateSearch(message, args);
-          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
         } else this.plateSearch(message, args);
       }
       if (command == 'firearmdb') {
@@ -783,7 +872,7 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.firearmSearch(message, args);
-          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
         } else this.firearmSearch(message, args);
       }
       if (command == 'panic') {
@@ -791,8 +880,16 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.enablePanic(message);
-          } else return message.channel.send(`You don't permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
         } else this.enablePanic(message);
+      }
+      if (command == 'license') {
+        if (customRoleStatus) {
+          let hasRole = await this.checkRoleStatus(message);
+          if (hasRole) {
+            this.revokeLicense(message, args);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}! `);
+        } else this.revokeLicense(message, args);
       }
       if (command == 'joincommunity') this.joinCommunity(message, args);
       if (command == 'leavecommunity') this.leaveCommunity(message);
