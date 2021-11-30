@@ -741,20 +741,15 @@ class Bot {
           **${prefix}platedb** <licence plate #> - \`Searches for Vehicle by Licence Plate #\`
           **${prefix}firearmdb** <Serial #> - \`Searches for Firearms by Serial #\`
           **${prefix}panic** - \`Enables/Disables your panic button\`
-          **${prefix}joincommunity** <community code> - \`Joins a community with the given code\`
-          **${prefix}leavecommunity** - \`Leaves your current active community\`
+          **${prefix}license** <revoke|reinstate> <firstName> <lastName> <dob> - \`Revoke/Reinstate License\`
           `,
           inline: true
         },
         {
           name: `**__LPC Command (2/2):__**`,
           value: `
-          **${prefix}community** - \`Returns the name of the Community your currenty in\`
-          **${prefix}channels** - \`Shows a list of allowed channels\`
           **${prefix}roles** - \`Shows a list of allowed roles\`
-          **${prefix}license** <revoke|reinstate> <firstName> <lastName> <dob> - \`Revoke/Reinstate License\`
           **${prefix}channels** - \`Shows a list of allowed channels\`
-          **${prefix}roles** - \`Shows a list of allowed roles\`
           **${prefix}joincommunity** <community code> - \`Joins a community with the given code\`
           **${prefix}leavecommunity** - \`Leaves your current active community\`
           **${prefix}community** - \`Returns the name of the Community your currenty in\`
