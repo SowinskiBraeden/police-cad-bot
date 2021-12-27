@@ -21,7 +21,7 @@ class Bot {
 
   // Updates Prefix
   async newPrefix(message, n) {
-    if (n[0]==undefined) return message.channel.send(`You must provide a \`new prefix\` ${message.author}!`);
+    if (n[0]==undefined) return message.channel.send(`You must provide a \`new prefix\` ${message.author}`);
     if (n[0].length<1) return message.channel.send('Your new prefix must be \`1\` character!')
     this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.prefix":n[0]}},function(err, res) {
       if (err) throw err;
@@ -36,30 +36,30 @@ class Bot {
 
   async remoteLogout(message) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You cannot logout if your not logged in ${message.author}!`);
-    this.dbo.collection("users").updateOne({"user.discord.id":message.author.id},{$unset:{"user.discord":""}},function(err,res) {
+    if (!user) return message.channel.send(`You cannot logout if your not logged in ${message.author}`);
+    this.dbo.collection("users").updateOne({"user.discord.id":message.author.id},{$unset:{"user.discord":""}, $set:{"user.discordConnected":false}},function(err,res) {
       if (err) throw err;
-      message.channel.send(`Succesfully logged out ${message.author}!`);
+      message.channel.send(`Succesfully disconnected you Discord account ${message.author}`);
     });
   }
 
   async account(message) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (user==null) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (user==null) return message.channel.send(`You are not logged in ${message.author}`);
     message.author.send(`${message.author} Logged in as **${user.user.username}**  |  **${user.user.email}**`);
   }
 
   async nameSearch(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}`);
     let data;
     if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
-      if (args.length==0) return message.channel.send(`You must provide a \`First Name\`, \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}!`);
-      if (args.length==1) return message.channel.send(`You're missing a \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}!`);
-      if (args.length==2) return message.channel.send(`You're missing a \`DOB\`(yyyy-mm-dd) ${message.author}!`);
+      if (args.length==0) return message.channel.send(`You must provide a \`First Name\`, \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}`);
+      if (args.length==1) return message.channel.send(`You're missing a \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}`);
+      if (args.length==2) return message.channel.send(`You're missing a \`DOB\`(yyyy-mm-dd) ${message.author}`);
     }
-    if (args.length==0) return message.channel.send(`You must provide a \`First Name\` and \`Last Name\` ${message.author}!`);
-    if (args.length==1) return message.channel.send(`You're missing a \`Last Name\` ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You must provide a \`First Name\` and \`Last Name\` ${message.author}`);
+    if (args.length==1) return message.channel.send(`You're missing a \`Last Name\` ${message.author}`);
 
     if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
       data = {
@@ -154,7 +154,7 @@ class Bot {
 
   async plateSearch(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}`);
     if (args.length==0) return message.channel.send(`You are missing a \`Plate #\` ${message.author}`);
     let data = {
       user: user,
@@ -205,7 +205,7 @@ class Bot {
 
   async firearmSearch(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}`);
     if (args.length==0) return message.channel.send(`You are missing a \`Serial Number\` ${message.author}`);
     let data = {
       user: user,
@@ -247,8 +247,8 @@ class Bot {
 
   async checkStatus(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
-    if (user.user.activeCommunity == null) return message.channel.send(`You must join a community to use this command ${message.author}!`);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}`);
+    if (user.user.activeCommunity == null) return message.channel.send(`You must join a community to use this command ${message.author}`);
     if (args.length == 0) {
       message.channel.send(`${message.author}'s status: \`${user.user.dispatchStatus}\` | Set by: \`${user.user.dispatchStatusSetBy}\``);
     } else {
@@ -256,9 +256,9 @@ class Bot {
       let targetUser = await this.dbo.collection("users").findOne({"user.discord.id":targetUserID}).then(user => user);
       // This lame line of code to get username without ping on discord
       const User = client.users.cache.get(args[0].replace('<@!', '').replace('>', ''));
-      if (!targetUser) return message.channel.send(`Cannot find **${User.tag}** ${message.author}!`);
+      if (!targetUser) return message.channel.send(`Cannot find **${User.tag}** ${message.author}`);
       if (targetUser.user.activeCommunity!=user.user.activeCommunity) {
-        return message.channel.send(`You are not in the same community as \`${User.tag}\` ${message.author}!`);
+        return message.channel.send(`You are not in the same community as \`${User.tag}\` ${message.author}`);
       }
       return message.channel.send(`${message.author}, \`${User.tag}'s\` status: \`${targetUser.user.dispatchStatus}\` | Set by: \`${targetUser.user.dispatchStatusSetBy}\``);
     }
@@ -267,8 +267,8 @@ class Bot {
   async updateStatus(message, args, prefix) {
     let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80', 'Panic', '10-41', '10-42'];
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
-    if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command ${message.author}!`);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}`);
+    if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command ${message.author}`);
     if (args.length==0) return message.channel.send(`You must provide a new status ${message.author} | To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
     if (!validStatus.includes(args[0])) return message.channel.send(`\`${args[0]}\` is a Invalid Status ${message.author}! To see a list of valid statuses, use command \`${prefix}validStatus\`.`);
     let onDuty=null;
@@ -294,15 +294,15 @@ class Bot {
     const socket = io.connect(this.config.socket);
     socket.emit('bot_update_status', req);
     socket.on('bot_updated_status', (res) => {
-      message.channel.send(`Succesfully updated status to \`${args[0]}\` ${message.author}!`);
+      message.channel.send(`Succesfully updated status to \`${args[0]}\` ${message.author}`);
       socket.disconnect();
     });
   }
 
   async enablePanic(message) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
-    if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command ${message.author}!`);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}`);
+    if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command ${message.author}`);
     const socket = io.connect(this.config.socket);
     // If panic is enabled, disable panic
     if (user.user.dispatchStatus=='Panic') {
@@ -336,26 +336,26 @@ class Bot {
       socket.emit('panic_button_update', myReq);
       socket.disconnect();
       let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
-      if (guild.server.pingOnPanic) return message.channel.send(`Attention <@&${guild.server.pingRole}>! \`${user.user.username}\` has activated panic!`);
+      if (guild.server.pingOnPanic) return message.channel.send(`Attention <@&${guild.server.pingRole}>! \`${user.user.username}\` has activated panic`);
       return;
     }
   }
 
   async updateLicense(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}`);
     let data;
     if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
-      if (args.length==0) return message.channel.send(`You must provide a \`License Status\`, \`First Name\`, \`Last Name\`, \`DOB\`(yyyy-mm-dd) ${message.author}!`);
-      if (args.length==1) return message.channel.send(`You're missing a \`First Name\`, \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}!`);
-      if (args.length==2) return message.channel.send(`You're missing a \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}!`);
-      if (args.length==3) return message.channel.send(`You're missing a \`DOB\`(yyyy-mm-dd) ${message.author}!`);
-      if (args[0].toLowerCase()!='revoke'&&args[0].toLowerCase()!='reinstate') return message.channel.send(`Invalid License Status, choose \`revoke\` or \`reinstate\` ${message.author}!`);
+      if (args.length==0) return message.channel.send(`You must provide a \`License Status\`, \`First Name\`, \`Last Name\`, \`DOB\`(yyyy-mm-dd) ${message.author}`);
+      if (args.length==1) return message.channel.send(`You're missing a \`First Name\`, \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}`);
+      if (args.length==2) return message.channel.send(`You're missing a \`Last Name\` and \`DOB\`(yyyy-mm-dd) ${message.author}`);
+      if (args.length==3) return message.channel.send(`You're missing a \`DOB\`(yyyy-mm-dd) ${message.author}`);
+      if (args[0].toLowerCase()!='revoke'&&args[0].toLowerCase()!='reinstate') return message.channel.send(`Invalid License Status, choose \`revoke\` or \`reinstate\` ${message.author}`);
     }
-    if (args.length==0) return message.channel.send(`You must provide a \`License Status\`, \`First Name\` and \`Last Name\` ${message.author}!`);
-    if (args.length==1) return message.channel.send(`You're missing a \`First Name\` and \`Last Name\` ${message.author}!`);
-    if (args.length==2) return message.channel.send(`You're missing a \`Last Name\` ${message.author}!`);
-    if (args[0].toLowerCase()!='revoke'&&args[0].toLowerCase()!='reinstate') return message.channel.send(`Invalid License Status, choose \`revoke\` or \`reinstate\` ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You must provide a \`License Status\`, \`First Name\` and \`Last Name\` ${message.author}`);
+    if (args.length==1) return message.channel.send(`You're missing a \`First Name\` and \`Last Name\` ${message.author}`);
+    if (args.length==2) return message.channel.send(`You're missing a \`Last Name\` ${message.author}`);
+    if (args[0].toLowerCase()!='revoke'&&args[0].toLowerCase()!='reinstate') return message.channel.send(`Invalid License Status, choose \`revoke\` or \`reinstate\` ${message.author}`);
 
     if (user.user.activeCommunity=='' || user.user.activeCommunity==null) {
       data = {
@@ -406,8 +406,8 @@ class Bot {
 
   async joinCommunity(message, args) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
-    if (args.length==0) return message.channel.send(`You must provide a \`Community Code\` ${message.author}!`);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}`);
+    if (args.length==0) return message.channel.send(`You must provide a \`Community Code\` ${message.author}`);
     let myReq = {
       userID: user._id,
       communityCode: args[0]
@@ -417,7 +417,7 @@ class Bot {
     socket.on('bot_joined_community', (data) => {
       socket.disconnect()
       if (data.error) {
-        return message.channel.send(`${data.error} ${message.author}!`);
+        return message.channel.send(`${data.error} ${message.author}`);
       }
       return message.channel.send(`Successfully joined the community \` ${data.commName} \` ${message.author}`)
     });
@@ -425,7 +425,7 @@ class Bot {
 
   async leaveCommunity(message) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}`);
     let myReq = {
       userID: user._id
     };
@@ -434,7 +434,7 @@ class Bot {
     socket.on('bot_left_community', (data) => {
       socket.disconnect()
       if (data.error) {
-        return message.channel.send(`${data.error} ${message.author}!`);
+        return message.channel.send(`${data.error} ${message.author}`);
       }
       return message.channel.send(`${data.message} ${message.author}`)
     });
@@ -442,39 +442,39 @@ class Bot {
 
   async community(message) {
     let user = await this.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in ${message.author}!`);
-    if (user.user.activeCommunity==null) return message.channel.send(`You are not in a community ${message.author}!`);
+    if (!user) return message.channel.send(`You are not logged in ${message.author}`);
+    if (user.user.activeCommunity==null) return message.channel.send(`You are not in a community ${message.author}`);
     let community = await this.dbo.collection("communities").findOne({_id:ObjectId(user.user.activeCommunity)}).then(community => community);
-    if (!community) return message.channel.send(`Community not found ${message.author}!`);
-    return message.channel.send(`You are in the community \`${community.community.name}\` ${message.author}!`);
+    if (!community) return message.channel.send(`Community not found ${message.author}`);
+    return message.channel.send(`You are in the community \`${community.community.name}\` ${message.author}`);
   }
 
   async setRole(message, args) {
-    if (args.length==0) return message.channel.send(`You must provide a role ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You must provide a role ${message.author}`);
     let roleid = args[0].replace('<@&', '').replace('>', '');
     let role = message.guild.roles.cache.find(x => x.id == roleid);
     if (role == undefined) {
       return message.channel.send(`Uh Oh! The role ${args[0]} connot be found.`);
     } else {
       let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
-      if (guild.server.allowedRole!=undefined&&guild.server.allowedRoles.includes(roleid)) return message.channel.send(`The role ${args[0]} has already been added ${message.author}!`);
+      if (guild.server.allowedRole!=undefined&&guild.server.allowedRoles.includes(roleid)) return message.channel.send(`The role ${args[0]} has already been added ${message.author}`);
       this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$push:{"server.allowedRoles":roleid},$set:{"server.hasCustomRoles":true}},function(err, res) {
         if (err) throw err;
-        return message.channel.send(`Successfully added ${args[0]} to allowed roles ${message.author}!`);
+        return message.channel.send(`Successfully added ${args[0]} to allowed roles ${message.author}`);
       });
     }
   }
 
   async removeRole(message, args) {
-    if (args.length==0) return message.channel.send(`You must provide a role ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You must provide a role ${message.author}`);
     let roleid = args[0].replace('<@&', '').replace('>', '');
     let role = message.guild.roles.cache.find(x => x.id == roleid);
     if (role == undefined) {
       return message.channel.send(`Uh Oh! The role ${args[0]} connot be found.`);
     } else {
       let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
-      if (guild.server.hasCustomRoles==false) return message.channel.send(`There are no roles to be removed ${message.author}!`);
-      if (!guild.server.allowedRoles.includes(roleid)) return message.channel.send(`The role ${args[0]} is not added to your roles ${message.author}!`);
+      if (guild.server.hasCustomRoles==false) return message.channel.send(`There are no roles to be removed ${message.author}`);
+      if (!guild.server.allowedRoles.includes(roleid)) return message.channel.send(`The role ${args[0]} is not added to your roles ${message.author}`);
       for (let i = 0; i < guild.server.allowedRoles.length; i++) {
         if (guild.server.allowedRoles[i]==roleid) {
           if ((guild.server.allowedRoles.length-1)==0) {
@@ -485,7 +485,7 @@ class Bot {
           } else if ((guild.server.allowedRoles.length-1)>0) {
             this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$pull:{"server.allowedRoles":roleid}},function(err, res) {
               if (err) throw err;
-              return message.channel.send(`Successfully removed ${args[0]} from allowed roles ${message.author}!`);
+              return message.channel.send(`Successfully removed ${args[0]} from allowed roles ${message.author}`);
             });
           }
         }
@@ -508,28 +508,28 @@ class Bot {
   }
 
   async setChannel(message, args) {
-    if (args.length==0) return message.channel.send(`You must provide a channel ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You must provide a channel ${message.author}`);
     let channelid = args[0].replace('<#', '').replace('>', '');
     let channel = client.channels.cache.get(channelid);
-    if (!channel) return message.channel.send(`Cannot find that channel ${message.author}!`);
-    if (channel.type=="voice") return message.channel.send(`Connot set voice channel to preferred channel ${message.author}!`);
-    if (channel.deleted) return message.channel.send(`Connot set deleted channel to preferred channel ${message.author}!`);
+    if (!channel) return message.channel.send(`Cannot find that channel ${message.author}`);
+    if (channel.type=="voice") return message.channel.send(`Connot set voice channel to preferred channel ${message.author}`);
+    if (channel.deleted) return message.channel.send(`Connot set deleted channel to preferred channel ${message.author}`);
     let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
-    if (guild.server.allowedChannels!=undefined&&guild.server.allowedChannels.includes(channelid)) return message.channel.send(`The channel ${args[0]} has already been added ${message.author}!`);
+    if (guild.server.allowedChannels!=undefined&&guild.server.allowedChannels.includes(channelid)) return message.channel.send(`The channel ${args[0]} has already been added ${message.author}`);
     this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$push:{"server.allowedChannels":channelid},$set:{"server.hasCustomChannels":true}},function(err, res) {
       if (err) throw err;
-      return message.channel.send(`Successfully added ${args[0]} to allowed channels ${message.author}!`);
+      return message.channel.send(`Successfully added ${args[0]} to allowed channels ${message.author}`);
     });
   }
 
   async removeChannel(message, args) {
-    if (args.length==0) return message.channel.send(`You must provide a channel ${message.author}!`);
+    if (args.length==0) return message.channel.send(`You must provide a channel ${message.author}`);
     let channelid = args[0].replace('<#', '').replace('>', '');
     let channel = client.channels.cache.get(channelid);
     if (!channel) return message.channel.send(`Uh Oh! The channel ${args[0]} connot be found.`);
     let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
-    if (guild.server.hasCustomChannels==false) return message.channel.send(`There are no channels to be removed ${message.author}!`);
-    if (!guild.server.allowedChannels.includes(channelid)) return message.channel.send(`The channel ${args[0]} is not added to your roles ${message.author}!`);
+    if (guild.server.hasCustomChannels==false) return message.channel.send(`There are no channels to be removed ${message.author}`);
+    if (!guild.server.allowedChannels.includes(channelid)) return message.channel.send(`The channel ${args[0]} is not added to your roles ${message.author}`);
     for (let i = 0; i < guild.server.allowedChannels.length; i++) {
       if (guild.server.allowedChannels[i]==channelid) {
         if ((guild.server.allowedChannels.length-1)==0) {
@@ -540,7 +540,7 @@ class Bot {
         } else if ((guild.server.allowedChannels.length-1)>0) {
           this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$pull:{"server.allowedChannels":channelid}},function(err, res) {
             if (err) throw err;
-            return message.channel.send(`Successfully removed ${args[0]} from allowed channels ${message.author}!`);
+            return message.channel.send(`Successfully removed ${args[0]} from allowed channels ${message.author}`);
           });
         }
       }
@@ -615,12 +615,12 @@ class Bot {
   }
 
   async togglePingOnPanic(message, args) {
-    if (args.length==0) return message.channel.send(`You must provide a \`Ping On Role Status\` and a \`role\` to ping ${message.author}!`);  
+    if (args.length==0) return message.channel.send(`You must provide a \`Ping On Role Status\` and a \`role\` to ping ${message.author}`);  
     if (args[0]=="false") {
       // disable ping on panic and remove ping role
       this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.pingOnPanic":false,"server.pingRole":null}},function(err, res) {
         if (err) throw err;
-        return message.channel.send(`Successfully disabled ping role on panic ${message.author}!`);
+        return message.channel.send(`Successfully disabled ping role on panic ${message.author}`);
       });
     } else if (args[0]=="true") {
       let roleid = args[1].replace('<@&', '').replace('>', '');
@@ -630,10 +630,10 @@ class Bot {
       } else {
         this.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.pingRole":roleid,"server.pingOnPanic":true}},function(err, res) {
           if (err) throw err;
-          return message.channel.send(`Successfully set ${args[1]} to be pinged on panic ${message.author}!`);
+          return message.channel.send(`Successfully set ${args[1]} to be pinged on panic ${message.author}`);
         });
       }
-    } else return message.channel.send(`\`${args[0]}\` is an invalid status, use \`true\` or \`false\` ${message.author}!`);
+    } else return message.channel.send(`\`${args[0]}\` is an invalid status, use \`true\` or \`false\` ${message.author}`);
   }
 
   async getPingOnPanicStatus(message) {
@@ -658,7 +658,7 @@ class Bot {
       if (!message.content.startsWith(prefix) || message.author.bot) return;
 
       if (customChannelStatus==true&&!allowedChannels.includes(message.channel.id)) {
-        return message.channel.send(`This is not the preferred channel, please one of the allowed channels. Use \`${prefix}channels\` to see a list of allowed channels ${message.author}!`);
+        return message.channel.send(`This is not the preferred channel, please one of the allowed channels. Use \`${prefix}channels\` to see a list of allowed channels ${message.author}`);
       }
       const args = message.content.slice(prefix.length).trim().split(' ');
       const command = args.shift().toLowerCase();
@@ -755,51 +755,51 @@ class Bot {
       if (command == 'help') message.channel.send(help);
       if (command == 'stats') message.channel.send(stats);
       if (command == 'setprefix') {
-        if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}!`);
+        if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}`);
         if(!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
         this.newPrefix(message, args);
       }
       if (command == 'setchannel') {
-        if (message.channel.type=="dm") return message.author.send(`You cannot set a channel in a dm ${message.author}!`);
+        if (message.channel.type=="dm") return message.author.send(`You cannot set a channel in a dm ${message.author}`);
         if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
         this.setChannel(message, args);
       }
       if (command == 'removechannel') {
-        if (message.channel.type=="dm") return message.author.send(`You cannot remove a channel in a dm ${message.author}!`);
+        if (message.channel.type=="dm") return message.author.send(`You cannot remove a channel in a dm ${message.author}`);
         if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
         this.removeChannel(message, args); 
       }
       if (command == 'setrole') {
-        if (message.channel.type=="dm") return message.author.send(`You cannot set a role in a dm ${message.author}!`);
+        if (message.channel.type=="dm") return message.author.send(`You cannot set a role in a dm ${message.author}`);
         if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
         this.setRole(message, args); 
       }
       if (command == 'removerole') {
-        if (message.channel.type=="dm") return message.author.send(`You cannot remove a role in a dm ${message.author}!`);
+        if (message.channel.type=="dm") return message.author.send(`You cannot remove a role in a dm ${message.author}`);
         if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
         this.removeRole(message, args); 
       }
       if (command == 'togglepingonpanic') {
-        if (message.channel.type=="dm") return message.author.send(`You cannot remove a role in a dm ${message.author}!`);
+        if (message.channel.type=="dm") return message.author.send(`You cannot remove a role in a dm ${message.author}`);
         if (!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
         this.togglePingOnPanic(message, args);
       }
       if (command == 'roles') {
-        if (message.channel.type=="dm") return message.author.send(`You cannot see allowed roles in a dm ${message.author}!`);
+        if (message.channel.type=="dm") return message.author.send(`You cannot see allowed roles in a dm ${message.author}`);
         this.roles(message);
       }
       if (command == 'channels') {
-        if (message.channel.tpye=="dm") return message.channel.send(`You cannot see allowed channels in a dm ${message.author}!`);
+        if (message.channel.tpye=="dm") return message.channel.send(`You cannot see allowed channels in a dm ${message.author}`);
         this.channels(message);
       }
       if (command == 'pingonpanic') {
-        if (message.channel.type=="dm") return message.channel.send(`You cannot see allowed channels in a dm ${message.author}!`);
+        if (message.channel.type=="dm") return message.channel.send(`You cannot see allowed channels in a dm ${message.author}`);
         this.getPingOnPanicStatus(message);
       }
 
       // Login
       if (command == 'login') {
-        if (message.channel.type=="text") return message.channel.send(`You must direct message me to use this command ${message.author}!`);
+        if (message.channel.type=="text") return message.channel.send(`You must direct message me to use this command ${message.author}`);
         this.remoteLogin(message, args);
       }
       if (command == 'logout') this.remoteLogout(message);
@@ -809,7 +809,7 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.checkStatus(message, args);
-          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}`);
         } else this.checkStatus(message, args);
       }
       if (command == 'updatestatus') {
@@ -817,7 +817,7 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.updateStatus(message, args, prefix);
-          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}`);
         } else this.updateStatus(message, args, prefix);
       }
       if (command == 'account') this.account(message);
@@ -827,7 +827,7 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.nameSearch(message, args);
-          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}`);
         } else this.nameSearch(message, args);
       }
       if (command == 'platedb') {
@@ -835,7 +835,7 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.plateSearch(message, args);
-          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}`);
         } else this.plateSearch(message, args);
       }
       if (command == 'firearmdb') {
@@ -843,7 +843,7 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.firearmSearch(message, args);
-          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}`);
         } else this.firearmSearch(message, args);
       }
       if (command == 'panic') {
@@ -851,7 +851,7 @@ class Bot {
           let hasRole = await this.checkRoleStatus(message);
           if (hasRole) {
             this.enablePanic(message);
-          } else return message.channel.send(`You don't have permission to use this command ${message.author}!`);
+          } else return message.channel.send(`You don't have permission to use this command ${message.author}`);
         } else this.enablePanic(message);
       }
       if (command == 'license') {
