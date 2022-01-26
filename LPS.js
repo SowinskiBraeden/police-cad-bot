@@ -698,7 +698,7 @@ class Bot {
         {
           name: `**__LPC Commands (1/2):__**`,
           value: `
-          **${prefix}login** <email> <login token> - \`Login to LPS account (DM only command)\`
+          **${prefix}login** - \`Redirects you to connect your discord to LPC(DM only)\`
           **${prefix}logout** - \`Logs out of your current logged in account\`
           **${prefix}validStatus** - \`Shows list of valid statuses to updade to\`
           **${prefix}checkStatus** <user> - \`Check your own or other status\`
