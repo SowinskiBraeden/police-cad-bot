@@ -256,7 +256,7 @@ class Bot {
       let targetUser = await this.dbo.collection("users").findOne({"user.discord.id":targetUserID}).then(user => user);
       // This lame line of code to get username without ping on discord
       const User = client.users.cache.get(args[0].replace('<@!', '').replace('>', ''));
-      if (!targetUser) return message.channel.send(`Cannot find **${User.tag}** ${message.author}`);
+      if (!targetUser) return message.channel.send(`Cannot find **${args[0]}** ${message.author}`);
       if (targetUser.user.activeCommunity!=user.user.activeCommunity) {
         return message.channel.send(`You are not in the same community as \`${User.tag}\` ${message.author}`);
       }
@@ -623,6 +623,7 @@ class Bot {
         return message.channel.send(`Successfully disabled ping role on panic ${message.author}`);
       });
     } else if (args[0]=="true") {
+      if (!args[1]) return message.channel.send(`You must provide a \`role\` to ping ${message.author}`);
       let roleid = args[1].replace('<@&', '').replace('>', '');
       let role = message.guild.roles.cache.find(x => x.id == roleid);
       if (role == undefined) {
@@ -748,6 +749,7 @@ class Bot {
       if (command == 'ping') message.channel.send('Pong!');
       if (command == 'help') message.channel.send(help);
       if (command == 'stats') message.channel.send(stats);
+      console.debug('"',message.channel.type,'"')
       if (command == 'setprefix') {
         if (message.channel.type=="dm") return message.author.send(`You cannot set a prefix in a dm ${message.author}`);
         if(!message.member.hasPermission(["ADMINISTRATOR","MANAGE_GUILD"])) return message.channel.send(`You don't have permission to used this command ${message.author}`);
@@ -783,7 +785,7 @@ class Bot {
         this.roles(message);
       }
       if (command == 'channels') {
-        if (message.channel.tpye=="dm") return message.channel.send(`You cannot see allowed channels in a dm ${message.author}`);
+        if (message.channel.type=="dm") return message.channel.send(`You cannot see allowed channels in a dm ${message.author}`);
         this.channels(message);
       }
       if (command == 'pingonpanic') {
