@@ -1,7 +1,8 @@
 const { Collection, Client, MessageEmbed } = require('discord.js');
-const CommandHandler =  require('./commands').Commands;
+const CommandHandler =  require('../commands').Commands;
 const MongoClient = require('mongodb').MongoClient;
-const Logger = require("./util/Logger");
+const Logger = require("../util/Logger");
+const path = require("path");
 const fs = require('fs');
 
 class LinesPoliceCadBot extends Client {
@@ -11,13 +12,15 @@ class LinesPoliceCadBot extends Client {
 
     this.config = config;
     this.commands = new Collection();
-    this.logger = new Logger('./Logs.log');
+    this.logger = new Logger(path.join(__dirname, "..", "logs/Logs.log"));
 
     if (this.config.Token === "")
     return new TypeError(
       "The botconfig.js is not filled out. Please make sure nothing is blank, otherwise the bot will not work properly."
     );
 
+    this.db;
+    this.dbo;
     this.connectMongo(this.config.mongoURI, this.config.dbo);
     this.LoadCommands();
     this.LoadEvents();
@@ -69,10 +72,11 @@ class LinesPoliceCadBot extends Client {
   async connectMongo(mongoURI, dbo) {
     this.db = await MongoClient.connect(mongoURI,{useUnifiedTopology:true});
     this.dbo = this.db.db(dbo);
+    this.log('Successfully connected to mongoDB');
   }
 
   LoadCommands() {
-    let CommandsDir = './commands';
+    let CommandsDir = path.join(__dirname, '..', 'commands');
     fs.readdir(CommandsDir, (err, files) => {
       if (err) this.log(err);
       else
@@ -91,7 +95,7 @@ class LinesPoliceCadBot extends Client {
   }
 
   LoadEvents() {
-    let EventsDir = './events';
+    let EventsDir = path.join(__dirname, '..', 'events');
     fs.readdir(EventsDir, (err, files) => {
       if (err) this.log(err);
       else
@@ -103,9 +107,17 @@ class LinesPoliceCadBot extends Client {
     });
   }
 
+  sendTime(Channel, Error) {
+    let embed = new MessageEmbed()
+      .setColor(this.config.EmbedColor)
+      .setDescription(Error);
+
+    Channel.send(embed);
+  }
+
   RegisterSlashCommands() {
     this.guilds.cache.forEach((guild) => {
-      require("./util/RegisterSlashCommands")(this, guild.id);
+      require("../util/RegisterSlashCommands")(this, guild.id);
     });
   }
 
@@ -121,7 +133,6 @@ class LinesPoliceCadBot extends Client {
 
   async GetGuild(GuildId) {
     let prefix;
-    let channelId;
     let customRoleStatus;
     let customChannelStatus;
     let allowedChannels;
@@ -154,10 +165,10 @@ class LinesPoliceCadBot extends Client {
       }
     let guildData = {
       prefix: prefix,
-      channelId: channelId,
+      allowedChannels: allowedChannels,
       customRoleStatus: customRoleStatus,
-      customChannelStatus: allowedChannels,
-      guildId: GuildId
+      customChannelStatus: customChannelStatus,
+      serverID: GuildId
     }
     return guildData;
   }
@@ -420,4 +431,4 @@ class LinesPoliceCadBot extends Client {
   // }
 }
 
-module.exports = {LinesPoliceCadBot};
+module.exports = LinesPoliceCadBot;

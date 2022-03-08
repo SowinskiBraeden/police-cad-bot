@@ -12,7 +12,7 @@ module.exports = {
   aliases: ["stat", "statistics", "info"],
   /**
    *
-   * @param {import("../LPS")} client
+   * @param {require("../structures/LinesPoliceCadBot")} client
    * @param {import("discord.js").Message} message
    * @param {string[]} args
    * @param {*} param3
@@ -30,12 +30,15 @@ module.exports = {
   SlashCommand: {
     /**
      *
-     * @param {import("../LPS")} client
+     * @param {require("../structures/LinesPoliceCadBot")} client
      * @param {import("discord.js").Message} message
      * @param {string[]} args
      * @param {*} param3
      */
-    run: async (client, interaction) => {
+    run: async (client, interaction, args, { GuildDB }) => {
+      if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
+        return interaction.send(`You are not allowed to use the bot in this channel.`);
+      }
       const { version } = require("discord.js");
       const stats = new MessageEmbed()
           .setColor('#0099ff')
@@ -44,7 +47,7 @@ module.exports = {
           .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
           .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
           .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")
-      return message.channel.send(stats)
+      interaction.send(stats)
     },
   },
 };

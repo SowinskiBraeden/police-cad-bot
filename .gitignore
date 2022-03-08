@@ -11,5 +11,4 @@ dev.js
 config/dev-config.js
 
 # Logs
-logs
-*.log
+logs/*

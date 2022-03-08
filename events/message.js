@@ -1,6 +1,6 @@
 /**
  *
- * @param {require("../LPS")} client
+ * @param {require("../structures/LinesPoliceCadBot")} client
  * @param {require("discord.js").Message} message
  * @returns {void} or nothing if you didn't know
  */
@@ -12,15 +12,6 @@ module.exports = async (client, message) => {
   let GuildDB = await client.GetGuild(message.guild.id);
   if (GuildDB && GuildDB.prefix) prefix = GuildDB.prefix;
 
-  //Initialize GuildDB
-  if (!GuildDB) {
-    await client.database.guild.set(message.guild.id, {
-      prefix: prefix,
-      DJ: null,
-    });
-    GuildDB = await client.GetGuild(message.guild.id);
-  }
-
   //Prefixes also have mention match
   const prefixMention = new RegExp(`^<@!?${client.user.id}> `);
   prefix = message.content.match(prefixMention)
@@ -28,6 +19,10 @@ module.exports = async (client, message) => {
     : prefix;
 
   if (message.content.indexOf(prefix) !== 0) return;
+
+  if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(message.channel.id)) {
+    return message.channel.send(`You are not allowed to use the bot in this channel.`);
+  }
 
   const args = message.content.slice(prefix.length).trim().split(/ +/g);
   //Making the command lowerCase because our file name will be in lowerCase

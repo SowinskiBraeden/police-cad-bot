@@ -3,12 +3,12 @@ const path = require("path");
 
 /**
  * Register slash commands for a guild
- * @param {require("../LPS")} client
+ * @param {require("../structures/LinesPoliceCadBot")} client
  * @param {string} guild
  */
 module.exports = (client, guild) => {
  
-  let commandsDir = path.join(__dirname, "..", "commands");;
+  let commandsDir = path.join(__dirname, "..", "commands");
 
   fs.readdir(commandsDir, (err, files) => {
     if (err) throw err;

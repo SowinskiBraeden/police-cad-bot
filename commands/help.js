@@ -11,7 +11,7 @@ module.exports = {
   aliases: ["command", "commands", "cmd"],
   /**
    *
-   * @param {import("../LPS")} client
+   * @param {require("../structures/LinesPoliceCadBot")} client
    * @param {import("discord.js").Message} message
    * @param {string[]} args
    * @param {*} param3
@@ -91,13 +91,16 @@ module.exports = {
     ],
     /**
      *
-     * @param {import("../LPS")} client
+     * @param {require("../structures/LinesPoliceCadBot")} client
      * @param {import("discord.js").Message} message
      * @param {string[]} args
      * @param {*} param3
      */
 
     run: async (client, interaction, args, { GuildDB }) => {
+      if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
+        return interaction.send(`You are not allowed to use the bot in this channel.`);
+      }
       let Commands = client.commands.map(
         (cmd) =>
           `\`${GuildDB ? GuildDB.prefix : client.config.DefaultPrefix}${
