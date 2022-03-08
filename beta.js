@@ -1,4 +1,6 @@
-const Bot = require('./LPS').Bot;
+const LinesPoliceCadBot = require('./LPS');
+const client =  new LinesPoliceCadBot(require('./config/beta-config'));
 
-let client = new Bot('DEVELOPMENT', process.env.token, './beta-config', process.env.mongoURI, process.env.dbo);
-client.main()
+client.build();
+
+module.exports = client;

@@ -8,4 +8,8 @@ test.js
 dev.js
 
 # Dev config
-dev-config.json
+config/dev-config.js
+
+# Logs
+logs
+*.log
