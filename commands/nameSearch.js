@@ -65,7 +65,7 @@ module.exports = {
           .setColor('#0099ff')
           .setTitle(`**${results.civilians[i].civilian.firstName} ${results.civilians[i].civilian.lastName} | ${results.civilians[i]._id}**`)
           .setURL('https://discord.gg/jgUW656v2t')
-          .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+          .setAuthor('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
           .setDescription('Name Search Results')
           .addFields(
             { name: `**First Name**`, value: `\`${results.civilians[i].civilian.firstName}\``, inline: true },
@@ -183,7 +183,7 @@ module.exports = {
             .setColor('#0099ff')
             .setTitle(`**${results.civilians[i].civilian.firstName} ${results.civilians[i].civilian.lastName} | ${results.civilians[i]._id}**`)
             .setURL('https://discord.gg/jgUW656v2t')
-            .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+            .setAuthor('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
             .setDescription('Name Search Results')
             .addFields(
               { name: `**First Name**`, value: `\`${results.civilians[i].civilian.firstName}\``, inline: true },

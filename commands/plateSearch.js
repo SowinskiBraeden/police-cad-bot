@@ -42,7 +42,7 @@ module.exports = {
           .setColor('#0099ff')
           .setTitle(`**${results.vehicles[i].vehicle.plate} | ${results.vehicles[i]._id}**`)
           .setURL('https://discord.gg/jgUW656v2t')
-          .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+          .setAuthor('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
           .setDescription('Plate Search Results')
           .addFields(
             { name: `**Plate #**`, value: `\`${results.vehicles[i].vehicle.plate}\``, inline: true },
@@ -112,7 +112,7 @@ module.exports = {
             .setColor('#0099ff')
             .setTitle(`**${results.vehicles[i].vehicle.plate} | ${results.vehicles[i]._id}**`)
             .setURL('https://discord.gg/jgUW656v2t')
-            .setAuthor('LPS Website Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
+            .setAuthor('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
             .setDescription('Plate Search Results')
             .addFields(
               { name: `**Plate #**`, value: `\`${results.vehicles[i].vehicle.plate}\``, inline: true },
