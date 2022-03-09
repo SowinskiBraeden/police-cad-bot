@@ -3,8 +3,8 @@ const io = require('socket.io-client');
 
 module.exports = {
   name: "namesearch",
-  description: "Search a Civilian in your community",
-  usage: "",
+  description: "Search a civilian",
+  usage: "[First Name] [Last Name] [yyyy-mm-dd]",
   permissions: {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
