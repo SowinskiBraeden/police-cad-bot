@@ -1,7 +1,7 @@
 module.exports = {
 	Dev: "DEVELOPMENT",
 	Version: "2.0.0 Beta",
-	Admins: ["userID", "userID"], // Admins of the bot
+  Admins: ["362791661274660874"], // Admins of the bot
 	defaultPrefix: "?",
 	socket: "https://police-cad-dev.herokuapp.com/",
 	SupportServer: "https://discord.gg/w2g2FFmHbF", //Support Server Link

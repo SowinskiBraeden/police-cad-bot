@@ -75,6 +75,8 @@ class LinesPoliceCadBot extends Client {
     this.log('Successfully connected to mongoDB');
   }
 
+  exists(n){return null!=n&&null!=n&&""!=n}
+
   LoadCommands() {
     let CommandsDir = path.join(__dirname, '..', 'commands');
     fs.readdir(CommandsDir, (err, files) => {
@@ -121,12 +123,15 @@ class LinesPoliceCadBot extends Client {
     });
   }
 
-  async checkRoleStatus(message) {
+  async checkRoleStatus(roles, serverID) {
     let hasRole = false;
-    let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
+    let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":serverID}).then(guild => guild);
     // If user has one of any in the list of allowed roles, hasRole is true
     for (let i = 0; i < guild.server.allowedRoles.length; i++) {
-      if (message.member.roles.cache.some(role => role.id == guild.server.allowedRoles[i])) hasRole = true;
+      if (roles.includes(guild.server.allowedRoles[i])) {
+        hasRole = true
+        break
+      }
     }
     return hasRole;
   }

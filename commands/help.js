@@ -17,11 +17,10 @@ module.exports = {
    * @param {*} param3
    */
   run: async (client, message, args, { GuildDB }) => {
-    let Commands = client.commands.map(
-      (cmd) =>
-        `\`${GuildDB ? GuildDB.prefix : client.config.DefaultPrefix}${
+    let Commands = client.commands.map((cmd) => 
+        cmd.name != 'debug' ? `\`${GuildDB ? GuildDB.prefix : client.config.DefaultPrefix}${
           cmd.name
-        }${cmd.usage ? " " + cmd.usage : ""}\` - ${cmd.description}`
+        }${cmd.usage ? " " + cmd.usage : ""}\` - ${cmd.description}` : null
     );
 
     let Embed = new MessageEmbed()
@@ -101,11 +100,10 @@ module.exports = {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
         return interaction.send(`You are not allowed to use the bot in this channel.`);
       }
-      let Commands = client.commands.map(
-        (cmd) =>
-          `\`${GuildDB ? GuildDB.prefix : client.config.DefaultPrefix}${
+      let Commands = client.commands.map((cmd) => 
+          cmd.name != 'debug' ? `\`${GuildDB ? GuildDB.prefix : client.config.DefaultPrefix}${
             cmd.name
-          }${cmd.usage ? " " + cmd.usage : ""}\` - ${cmd.description}`
+          }${cmd.usage ? " " + cmd.usage : ""}\` - ${cmd.description}` : null
       );
 
       let Embed = new MessageEmbed()

@@ -1,7 +1,6 @@
 const { MessageEmbed } = require('discord.js');
 const io = require('socket.io-client');
 
-
 module.exports = {
   name: "namesearch",
   description: "Search a Civilian in your community",
@@ -18,7 +17,13 @@ module.exports = {
    * @param {string[]} args
    * @param {*} param3
   */
-  run: async (client, message, args) => {
+  run: async (client, message, args, { GuildDB }) => {
+    if (GuildDB.customRoleStatus) {
+      let userRoles = []; // TODO: get user roles
+      let hasRole = await client.hasRole(userRoles, GuildDB.serverID);
+      if (!hasRole) return message.channel.send(`You don't have permission to use this command.`);
+    }
+
     let user = await client.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in.`);
     let data;
