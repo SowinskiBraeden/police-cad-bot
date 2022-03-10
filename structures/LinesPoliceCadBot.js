@@ -2,6 +2,7 @@ const { Collection, Client, MessageEmbed } = require('discord.js');
 const CommandHandler =  require('../commands').Commands;
 const MongoClient = require('mongodb').MongoClient;
 const Logger = require("../util/Logger");
+const io = require('socket.io-client');
 const path = require("path");
 const fs = require('fs');
 
@@ -73,6 +74,41 @@ class LinesPoliceCadBot extends Client {
     this.db = await MongoClient.connect(mongoURI,{useUnifiedTopology:true});
     this.dbo = this.db.db(dbo);
     this.log('Successfully connected to mongoDB');
+  }
+
+  // This is for the 'panic' command when enabling panic
+  // May be used by other interaction
+  async forceUpdateStatus(sendObject, userID, status) {
+    let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80', '10-41', '10-42', 'Panic'];
+    let user = await this.dbo.collection("users").findOne({"user.discord.id":userID}).then(user => user);
+    if (!user) return returnMessage(`You are not logged in <@${userID}>`);
+    if (user.user.activeCommunity==null) return returnMessage(`You must join a community to use this command.`);
+    if (!validStatus.includes(status)) return returnMessage(`\`${status}\` is a Invalid Status.`);
+    let onDuty=null;
+    let updateDuty=false;
+    if (status=='10-41') {
+      onDuty=true;
+      updateDuty=true;
+      status='Online';
+    }
+    if (status=='10-42') {
+      onDuty=false;
+      updateDuty=true;
+      status='Offline';
+    }
+    let req={
+      userID: user._id,
+      status: status,
+      setBy: 'Self',
+      onDuty: onDuty,
+      updateDuty: updateDuty
+    };
+    const socket = io.connect(this.config.socket);
+    socket.emit('bot_update_status', req);
+    socket.on('bot_updated_status', (res) => {
+      sendObject.send(`Succesfully updated status to \`${status}\` <@${userID}>`);
+      socket.disconnect();
+    });
   }
 
   exists(n){return null!=n&&null!=n&&""!=n}

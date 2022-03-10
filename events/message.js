@@ -56,7 +56,7 @@ module.exports = async (client, message) => {
       return client.sendError(
         message.channel,
         "Missing Permissions!" + GuildDB.DJ
-          ? " You need the `DJ` role to access this command."
+          ? " You need the correct role to access this command."
           : ""
       );
     cmd.run(client, message, args, { GuildDB });

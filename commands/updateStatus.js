@@ -18,7 +18,7 @@ module.exports = {
    * @param {*} param3
   */
   run: async (client, message, args) => {
-    let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80', 'Panic', '10-41', '10-42'];
+    let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80', '10-41', '10-42'];
     let user = await client.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in ${message.author}`);
     if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command.`);
@@ -63,7 +63,7 @@ module.exports = {
           { name: '10-8 (In Service)', value: '10-8', }, { name: '10-7 (Out of Service)', value: '10-7', }, { name: '10-6 (Busy)', value: '10-6', },
           { name: '10-11 (Traffic Stop)', value: '10-11', }, { name: '10-23 (Arrive on Scene', value: '10-23', }, { name: '10-97 (In Route)', value: '10-97' },
           { name: '10-15 (Subject in Custody)', value: '10-15', }, { name: '10-70 (Foot Pursuit)', value: '10-70', }, { name: '10-80 (Vehicle Pursuit)', value: '10-80' },
-          { name: 'Panic', value: 'Panic', }, { name: '10-41 (Log in to CAD)', value: '10-41', }, { name: '10-42 (Log out of CAD)', value: '10-42' },
+          { name: '10-41 (Log in to CAD)', value: '10-41', }, { name: '10-42 (Log out of CAD)', value: '10-42' },
         ],
       },
     ],
