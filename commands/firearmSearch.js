@@ -52,7 +52,7 @@ module.exports = {
           let isStolen = results.firearms[i].firearm.isStolen;
           if (isStolen=="false"||isStolen==false) firearmResult.addFields({name:`**Stolen**`,value:'\`No\`',inline: true});
           if (isStolen=="true"||isStolen==true) firearmResult.addFields({name:`**Stolen**`,value:'\`Yes\`',inline: true});
-          message.channel.send(firearmResult);
+          message.channel.send({ embeds: [firearmResult] });
         }
       }
       socket.disconnect();

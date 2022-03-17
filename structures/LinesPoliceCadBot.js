@@ -8,8 +8,8 @@ const fs = require('fs');
 
 class LinesPoliceCadBot extends Client {
 
-  constructor(config) {
-    super()
+  constructor(options, config) {
+    super(options)
 
     this.config = config;
     this.commands = new Collection();
@@ -32,14 +32,8 @@ class LinesPoliceCadBot extends Client {
       client.log("Interaction")
       let GuildDB = await this.GetGuild(interaction.guild_id);
 
-      //Initialize GuildDB
-      if (!GuildDB) {
-        await this.database.guild.set(interaction.guild_id, {
-          prefix: this.config.DefaultPrefix,
-          DJ: null,
-        });
-        GuildDB = await this.GetGuild(interaction.guild_id);
-      }
+      if (interaction.type==3) return;
+      
 
       const command = interaction.data.name.toLowerCase();
       const args = interaction.data.options;
@@ -61,7 +55,6 @@ class LinesPoliceCadBot extends Client {
             },
           });
       };
-
       let cmd = client.commands.get(command);
       if (cmd.SlashCommand && cmd.SlashCommand.run)
         cmd.SlashCommand.run(this, interaction, args, { GuildDB });
@@ -277,7 +270,7 @@ class LinesPoliceCadBot extends Client {
   //     const help = new MessageEmbed()
   //       .setColor('#0099ff')
   //       .setTitle('**Commands:**')
-  //       .setURL('https://discord.gg/w2g2FFmHbF')
+  //       .setURL(client.config.SupportServer)
   //       .setAuthor('LPS Website & Bot Support', 'https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png', 'https://discord.gg/jgUW656v2t')
   //       .setDescription('Lines Police CAD Bot Commands')
   //       .addFields({
@@ -334,7 +327,7 @@ class LinesPoliceCadBot extends Client {
   //     const stats = new MessageEmbed()
   //         .setColor('#0099ff')
   //         .setTitle("Current LPC-Bot Statistics")
-  //         .setURL('https://discord.gg/w2g2FFmHbF')
+  //         .setURL(client.config.SupportServer)
   //         .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
   //         .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
   //         .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")

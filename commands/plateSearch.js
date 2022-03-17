@@ -61,7 +61,7 @@ module.exports = {
           if (validInsurance=='2') plateResult.addFields({ name: `**Insurance**`, value: `\`InValid\``, inline: true });
           if (stolen=='1') plateResult.addFields({ name: `**Stolen**`, value: `\`No\``, inline: true });
           if (stolen=='2') plateResult.addFields({ name: `**Stolen**`, value: `\`Yes\``, inline: true });
-          message.channel.send(plateResult);
+          message.channel.send({ embeds: [plateResult] });
         }
       }
       socket.disconnect();

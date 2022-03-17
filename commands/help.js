@@ -22,7 +22,6 @@ module.exports = {
           cmd.name
         }${cmd.usage ? " " + cmd.usage : ""}\` - ${cmd.description}` : null
     );
-
     let Embed = new MessageEmbed()
       .setAuthor(
         `Commands of ${client.user.username}`,
@@ -36,7 +35,9 @@ module.exports = {
       ).setDescription(`${Commands.join("\n")}
   
   Lines Police CAD Bot Version: v${client.config.Version}`);
-    if (!args[0]) message.channel.send(Embed);
+    if (!args[0]) {
+      message.channel.send({ embeds: [Embed] });
+    }
     else {
       let cmd =
         client.commands.get(args[0]) ||
@@ -74,7 +75,7 @@ module.exports = {
           }`
         );
 
-      message.channel.send(embed);
+      message.channel.send({ embeds: [embed] });
     }
   },
 

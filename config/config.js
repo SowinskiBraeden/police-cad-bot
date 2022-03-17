@@ -4,7 +4,7 @@ module.exports = {
   Admins: ["362791661274660874"], // Admins of the bot
 	defaultPrefix: "?",
 	socket: "https://www.linespolice-cad.com/",
-	SupportServer: "https://discord.gg/w2g2FFmHbF", //Support Server Link
+	SupportServer: client.config.SupportServer, //Support Server Link
 	Token: process.env.TOKEN || "", //Discord Bot Token
   Scopes: ["identify", "guilds", "applications.commands"], //Discord OAuth2 Scopes
   IconURL: "https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png",

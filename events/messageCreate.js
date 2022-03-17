@@ -1,7 +1,7 @@
 /**
  *
  * @param {require("../structures/LinesPoliceCadBot")} client
- * @param {require("discord.js").Message} message
+ * @param {require("discord.js").message} message
  * @returns {void} or nothing if you didn't know
  */
 
@@ -45,13 +45,7 @@ module.exports = async (client, message) => {
         cmd.permissions.member &&
         !message.channel
           .permissionsFor(message.member)
-          .has(cmd.permissions.member)) ||
-      (cmd.permissions &&
-        GuildDB.DJ &&
-        !message.channel
-          .permissionsFor(message.member)
-          .has(["ADMINISTRATOR"]) &&
-        !message.member.roles.cache.has(GuildDB.DJ))
+          .has(cmd.permissions.member))
     )
       return client.sendError(
         message.channel,

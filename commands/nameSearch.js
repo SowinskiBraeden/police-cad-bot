@@ -26,12 +26,11 @@ module.exports = {
 
     let user = await client.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in.`);
-    let data;
     if (args.length==0) return message.channel.send(`You must provide a \`First Name\`, \`Last Name\` and \`DOB\`(yyyy-mm-dd).`);
     if (args.length==1) return message.channel.send(`You're missing a \`Last Name\` and \`DOB\`(yyyy-mm-dd).`);
     if (args.length==2) return message.channel.send(`You're missing a \`DOB\`(yyyy-mm-dd).`);
 
-    data = {
+    let data = {
       user: user,
       query: {
         firstName: args[0],
@@ -104,7 +103,7 @@ module.exports = {
           if (hairColor!=null&&hairColor!=undefined&&hairColor!='') nameResult.addFields({name:'**Hair Color**',value:`\`${hairColor}\``,inline:true});
           nameResult.addFields({name:'**Organ Donor**',value:`\`${results.civilians[i].civilian.organDonor}\``,inline:true});
           nameResult.addFields({name:'**Veteran**',value:`\`${results.civilians[i].civilian.veteran}\``,inline:true});
-          message.channel.send(nameResult);
+          message.channel.send({ embeds: [nameResult] });
         }
       }
       socket.disconnect();
