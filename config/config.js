@@ -1,13 +1,13 @@
 module.exports = {
 	Dev: "PRODUCTION",
-	Version: "2.0.0",
-	Admins: ["userID", "userID"], // Admins of the bot
+	Version: "3.0.0",
+  Admins: ["362791661274660874"], // Admins of the bot
 	defaultPrefix: "?",
-	socket: "https://www.linespolice-cad.com/",
+	socket: "https://linespolice-cad.com/",
 	SupportServer: "https://discord.gg/w2g2FFmHbF", //Support Server Link
 	Token: process.env.TOKEN || "", //Discord Bot Token
   Scopes: ["identify", "guilds", "applications.commands"], //Discord OAuth2 Scopes
-  IconURL: "https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-server.png",
+  IconURL: "https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-cad.png",
   EmbedColor: "#0099ff",
   Permissions: 2205281600,
   Website: "https://linespolice-cad.com",
@@ -19,6 +19,6 @@ module.exports = {
   Presence: {
     status: "online", // You can show online, idle, and dnd
     name: "GTA V", // The message shown
-    type: "Playing", // PLAYING, WATCHING, LISTENING, STREAMING
+    type: "PLAYING", // PLAYING, WATCHING, LISTENING, STREAMING
   },
 }

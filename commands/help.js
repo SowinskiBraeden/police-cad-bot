@@ -11,19 +11,17 @@ module.exports = {
   aliases: ["command", "commands", "cmd"],
   /**
    *
-   * @param {import("../LPS")} client
+   * @param {require("../structures/LinesPoliceCadBot")} client
    * @param {import("discord.js").Message} message
    * @param {string[]} args
    * @param {*} param3
    */
   run: async (client, message, args, { GuildDB }) => {
-    let Commands = client.commands.map(
-      (cmd) =>
-        `\`${GuildDB ? GuildDB.prefix : client.config.DefaultPrefix}${
+    let Commands = client.commands.map((cmd) => 
+        cmd.name != 'debug' ? `\`${GuildDB ? GuildDB.prefix : client.config.DefaultPrefix}${
           cmd.name
-        }${cmd.usage ? " " + cmd.usage : ""}\` - ${cmd.description}`
+        }${cmd.usage ? " " + cmd.usage : ""}\` - ${cmd.description}` : null
     );
-
     let Embed = new MessageEmbed()
       .setAuthor(
         `Commands of ${client.user.username}`,
@@ -37,7 +35,9 @@ module.exports = {
       ).setDescription(`${Commands.join("\n")}
   
   Lines Police CAD Bot Version: v${client.config.Version}`);
-    if (!args[0]) message.channel.send(Embed);
+    if (!args[0]) {
+      message.channel.send({ embeds: [Embed] });
+    }
     else {
       let cmd =
         client.commands.get(args[0]) ||
@@ -75,7 +75,7 @@ module.exports = {
           }`
         );
 
-      message.channel.send(embed);
+      message.channel.send({ embeds: [embed] });
     }
   },
 
@@ -91,18 +91,20 @@ module.exports = {
     ],
     /**
      *
-     * @param {import("../LPS")} client
+     * @param {require("../structures/LinesPoliceCadBot")} client
      * @param {import("discord.js").Message} message
      * @param {string[]} args
      * @param {*} param3
      */
 
     run: async (client, interaction, args, { GuildDB }) => {
-      let Commands = client.commands.map(
-        (cmd) =>
-          `\`${GuildDB ? GuildDB.prefix : client.config.DefaultPrefix}${
+      if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
+        return interaction.send(`You are not allowed to use the bot in this channel.`);
+      }
+      let Commands = client.commands.map((cmd) => 
+          cmd.name != 'debug' ? `\`${GuildDB ? GuildDB.prefix : client.config.DefaultPrefix}${
             cmd.name
-          }${cmd.usage ? " " + cmd.usage : ""}\` - ${cmd.description}`
+          }${cmd.usage ? " " + cmd.usage : ""}\` - ${cmd.description}` : null
       );
 
       let Embed = new MessageEmbed()

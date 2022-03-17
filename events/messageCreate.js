@@ -1,7 +1,7 @@
 /**
  *
- * @param {require("../LPS")} client
- * @param {require("discord.js").Message} message
+ * @param {require("../structures/LinesPoliceCadBot")} client
+ * @param {require("discord.js").message} message
  * @returns {void} or nothing if you didn't know
  */
 
@@ -12,15 +12,6 @@ module.exports = async (client, message) => {
   let GuildDB = await client.GetGuild(message.guild.id);
   if (GuildDB && GuildDB.prefix) prefix = GuildDB.prefix;
 
-  //Initialize GuildDB
-  if (!GuildDB) {
-    await client.database.guild.set(message.guild.id, {
-      prefix: prefix,
-      DJ: null,
-    });
-    GuildDB = await client.GetGuild(message.guild.id);
-  }
-
   //Prefixes also have mention match
   const prefixMention = new RegExp(`^<@!?${client.user.id}> `);
   prefix = message.content.match(prefixMention)
@@ -28,6 +19,10 @@ module.exports = async (client, message) => {
     : prefix;
 
   if (message.content.indexOf(prefix) !== 0) return;
+
+  if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(message.channel.id)) {
+    return message.channel.send(`You are not allowed to use the bot in this channel.`);
+  }
 
   const args = message.content.slice(prefix.length).trim().split(/ +/g);
   //Making the command lowerCase because our file name will be in lowerCase
@@ -50,18 +45,12 @@ module.exports = async (client, message) => {
         cmd.permissions.member &&
         !message.channel
           .permissionsFor(message.member)
-          .has(cmd.permissions.member)) ||
-      (cmd.permissions &&
-        GuildDB.DJ &&
-        !message.channel
-          .permissionsFor(message.member)
-          .has(["ADMINISTRATOR"]) &&
-        !message.member.roles.cache.has(GuildDB.DJ))
+          .has(cmd.permissions.member))
     )
       return client.sendError(
         message.channel,
         "Missing Permissions!" + GuildDB.DJ
-          ? " You need the `DJ` role to access this command."
+          ? " You need the correct role to access this command."
           : ""
       );
     cmd.run(client, message, args, { GuildDB });
