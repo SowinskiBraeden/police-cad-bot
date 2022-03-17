@@ -59,10 +59,10 @@ module.exports = {
       if (channel.type=="voice") return interaction.send(`Connot set voice channel to preferred channel.`);
       if (channel.deleted) return interaction.send(`Connot set deleted channel to preferred channel.`);
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
-      if (exists(guild.server.allowedChannels)&&guild.server.allowedChannels.includes(channelid)) return interaction.send(`The channel ${args[0]} has already been added.`);
+      if (exists(guild.server.allowedChannels)&&guild.server.allowedChannels.includes(channelid)) return interaction.send(`The channel <#${args[0].value}> has already been added.`);
       client.dbo.collection("prefixes").updateOne({"server.serverID":interaction.guild.id},{$push:{"server.allowedChannels":channelid},$set:{"server.hasCustomChannels":true}},function(err, res) {
         if (err) throw err;
-        return interaction.send(`Successfully added ${args[0]} to allowed channels.`);
+        return interaction.send(`Successfully added <#${args[0].value}> to allowed channels.`);
       });
     },
   },
