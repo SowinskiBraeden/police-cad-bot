@@ -1,5 +1,4 @@
 const { MessageEmbed } = require('discord.js');
-const exists = require('../util/Exists');
 
 module.exports = {
   name: "setchannel",
