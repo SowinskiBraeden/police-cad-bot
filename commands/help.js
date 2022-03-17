@@ -119,7 +119,7 @@ module.exports = {
           }help [Command] | Have a nice day!`
         ).setDescription(`${Commands.join("\n")}
   
-  Lines Police CAD Bot Version: v${client.Version}`);
+  Lines Police CAD Bot Version: v${client.config.Version}`);
       if (!args) return interaction.send(Embed);
       else {
         let cmd =
