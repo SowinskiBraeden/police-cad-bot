@@ -1,6 +1,6 @@
-const LinesPoliceCadBot = require('./LPS');
-const client =  new LinesPoliceCadBot(require('./config/config'));
+const LinesPoliceCadBot = require('./structures/LinesPoliceCadBot');
+const config = require('./config/config');
+const { Intents } = require('discord.js');
 
-client.build();
-
-module.exports = client;
+let client =  new LinesPoliceCadBot({ intents:[Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]}, config);
+client.build()
