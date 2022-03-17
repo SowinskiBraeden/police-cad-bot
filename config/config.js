@@ -5,7 +5,7 @@ module.exports = {
 	defaultPrefix: "?",
 	socket: "https://linespolice-cad.com/",
 	SupportServer: "https://discord.gg/w2g2FFmHbF", //Support Server Link
-	Token: process.env.TOKEN || "", //Discord Bot Token
+	Token: process.env.token || "", //Discord Bot Token
   Scopes: ["identify", "guilds", "applications.commands"], //Discord OAuth2 Scopes
   IconURL: "https://raw.githubusercontent.com/Linesmerrill/police-cad/master/lines-police-cad.png",
   EmbedColor: "#0099ff",
