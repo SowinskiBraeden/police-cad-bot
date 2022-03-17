@@ -1,14 +1,14 @@
 const { MessageEmbed } = require('discord.js');
 
 module.exports = {
-  name: "",
-  description: "",
+  name: "pingonpanic",
+  description: "Get ping on panic status",
   usage: "",
   permissions: {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
-  aliases: [],
+  aliases: ["pingonpanicstatus"],
   /**
    *
    * @param {require("../structures/LinesPoliceCadBot")} client
@@ -35,7 +35,7 @@ module.exports = {
       }
     
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
-      return interaction.send(`Current Ping on Panic Status: ${guild.server.pingOnPanic}`);  
+      return interaction.send(`Current Ping on Panic Status: \` ${guild.server.pingOnPanic.toString().toUpperCase()} \``);  
     },
   },
 }

@@ -53,7 +53,7 @@ module.exports = {
         value: "role",
         type: 8,
         required: true,
-      }
+      },
     ],  
     /**
      *
