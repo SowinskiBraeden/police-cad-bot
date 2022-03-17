@@ -2,13 +2,12 @@
 node_modules/*
 
 # test file
+default.js
 test.js
 
-# Dev Launch
-dev.js
-
-# Dev config
+# Dev
 config/dev-config.js
+dev.js
 
 # Logs
 logs/*

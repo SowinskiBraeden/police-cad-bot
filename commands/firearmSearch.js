@@ -18,6 +18,9 @@ module.exports = {
    * @param {*} param3
   */
   run: async (client, message, args) => {
+    let useCommand = await client.verifyUseCommand(GuildDB.serverID, message.member.roles.cache, false);
+    if (!useCommand) return message.channel.send("You don't have permission to use this command");
+
     let user = await client.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
     if (!user) return message.channel.send(`You are not logged in.`);
     if (args.length==0) return message.channel.send(`You are missing a \`Serial Number\`.`);
@@ -79,6 +82,9 @@ module.exports = {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
         return interaction.send(`You are not allowed to use the bot in this channel.`);
       }
+      
+      let useCommand = await client.verifyUseCommand(GuildDB.serverID, interaction.member.roles, true);
+      if (!useCommand) return interaction.send("You don't have permission to use this command");
       
       let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
       if (!user) return interaction.send(`You are not logged in.`);
