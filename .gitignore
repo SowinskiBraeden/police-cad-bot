@@ -4,6 +4,7 @@ node_modules/*
 # test file
 default.js
 test.js
+default.js
 
 # Dev
 config/dev-config.js
