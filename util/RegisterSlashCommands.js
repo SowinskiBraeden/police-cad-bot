@@ -28,7 +28,7 @@ module.exports = (client, guild) => {
       try {
         await GuildAPI.commands.post({ data: dataStuff });
       } catch (e) {
-        console.log(e);
+        client.log('Error: API missing permissions, re-invite the bot');
       }
     });
   });
