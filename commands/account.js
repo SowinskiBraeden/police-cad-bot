@@ -39,7 +39,7 @@ module.exports = {
       client.users.fetch(interaction.member.user.id)
         .then(duser => duser.send(`<@${interaction.member.user.id}> Logged in as **${user.user.username}**  |  **${user.user.email}**`).catch(err => {client.log(err)}))
         .catch(err => {client.log(err)});
-      return
+      return interaction.send('Your account details have been sent in your dm.');
     },
   },
 }
