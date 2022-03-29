@@ -33,6 +33,7 @@ module.exports = (client, guild) => {
         // Forces bot to leave server
         let guildID = client.guilds.cache.get(guild);
         if (guildID) guildID.leave();
+        client.log(`Server stats is now down to ${client.guilds.cache.size}`);
       }
     });
   });
