@@ -74,7 +74,7 @@ module.exports = {
         // This lame line of code to get username without ping on discord
         const User = client.users.cache.get(targetUserID);
         console.debug(targetUserID, targetUser, User);
-        if (!targetUser) return message.channel.send(`Cannot find **${args[0].value}** <@${interaction.member.user.id}>`);
+        if (!targetUser) return interaction.send(`Cannot find **${args[0].value}** <@${interaction.member.user.id}>`);
         if (targetUser.user.activeCommunity!=user.user.activeCommunity) {
           return interaction.send(`You are not in the same community as \`${User.tag}\` <@${interaction.member.user.id}>`);
         }
