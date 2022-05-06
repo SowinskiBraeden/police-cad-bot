@@ -1,4 +1,5 @@
 const { MessageEmbed } = require('discord.js');
+const ObjectId = require('mongodb').ObjectId;
 
 module.exports = {
   name: "community",
