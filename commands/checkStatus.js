@@ -66,7 +66,7 @@ module.exports = {
       let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
       if (!user) return interaction.send(`You are not logged in.`);
       if (user.user.activeCommunity == null) return interaction.send(`You must join a community to use this command.`);
-      if (!client.client.exists(args)) {
+      if (!client.exists(args)) {
         return interaction.send(`<@${interaction.member.user.id}>'s status: \`${user.user.dispatchStatus}\` | Set by: \`${user.user.dispatchStatusSetBy}\``);
       } else {
         let targetUserID = args[0].value.replace('<@!', '').replace('>', '');
