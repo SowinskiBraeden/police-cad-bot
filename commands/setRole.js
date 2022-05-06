@@ -24,7 +24,7 @@ module.exports = {
       return message.channel.send(`Uh Oh! The role ${args[0]} connot be found.`);
     } else {
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
-      if (client.client.exists(guild.server.allowedRoles)&&guild.server.allowedRoles.includes(roleid)) return message.channel.send(`The role ${args[0]} has already been added.`);
+      if (client.exists(guild.server.allowedRoles)&&guild.server.allowedRoles.includes(roleid)) return message.channel.send(`The role ${args[0]} has already been added.`);
       client.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$push:{"server.allowedRoles":roleid},$set:{"server.hasCustomRoles":true}},function(err, res) {
         if (err) throw err;
         return message.channel.send(`Successfully added ${args[0]} to allowed roles.`);
