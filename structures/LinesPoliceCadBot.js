@@ -103,7 +103,7 @@ class LinesPoliceCadBot extends Client {
     });
   }
 
-  exists(n){return null!=n&&null!=n&&""!=n}
+  exists(n) {return null != n && undefined != n && "" != n}
 
   LoadCommands() {
     let CommandsDir = path.join(__dirname, '..', 'commands');
@@ -244,7 +244,6 @@ class LinesPoliceCadBot extends Client {
 
     Channel.send(embed);
   }
-
 
   build() {
     this.login(this.config.Token);

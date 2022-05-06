@@ -21,10 +21,10 @@ module.exports = {
     if (!client.config.Admins.includes(message.author.id)) return;
 
     if (args.length==0) return message.channel.send('Debug Error: Provide a debug command');
-    if (!client.exists(args[0])) return message.channel.send('Debug Error: Provide a valid debug command');
+    if (!client.client.exists(args[0])) return message.channel.send('Debug Error: Provide a valid debug command');
 
     let debugConsole = false
-    if (client.exists(args[1])&&args[1]=='true') debugConsole = true
+    if (client.client.exists(args[1])&&args[1]=='true') debugConsole = true
 
     let command = args[0].toLowerCase();
 
@@ -91,7 +91,7 @@ module.exports = {
       if (!client.config.Admins.includes(interaction.member.user.id)) return;
 
       if (args.length==0) return message.channel.send('Debug Error: Provide a debug command');
-      if (!client.exists(args[0].value)) return interaction.send('Debug Error: Provide a valid debug command');
+      if (!client.client.exists(args[0].value)) return interaction.send('Debug Error: Provide a valid debug command');
 
       let debugConsole = args[1].value;
 
