@@ -100,7 +100,7 @@ module.exports = {
       socket.on('bot_firearm_search_results', results => {
         if (results.user._id==user._id) {
           if (results.firearms.length==0) {
-            return interaction.send(`No Firearms found ${message.author}`);
+            return interaction.send(`No Firearms found <@${interaction.member.user.id}>`);
           }
 
           for (let i = 0; i < results.firearms.length; i++) {
