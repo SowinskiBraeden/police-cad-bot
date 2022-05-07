@@ -3,7 +3,7 @@ module.exports = {
 	Version: "3.0.0",
   Admins: ["362791661274660874"], // Admins of the bot
 	DefaultPrefix: "?",
-	socket: "https://linespolice-cad.com/",
+	socket: "https://www.linespolice-cad.com/",
 	SupportServer: "https://discord.gg/w2g2FFmHbF", //Support Server Link
 	Token: process.env.token || "", //Discord Bot Token
   Scopes: ["identify", "guilds", "applications.commands"], //Discord OAuth2 Scopes
