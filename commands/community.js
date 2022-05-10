@@ -41,7 +41,7 @@ module.exports = {
       
       let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
       if (!user) return interaction.send(`You are not logged in.`);
-      if (user.user.activeCommunity==null) return message.channel.send(`You are not in a community.`);
+      if (user.user.activeCommunity==null) return interaction.send(`You are not in a community.`);
       let community = await client.dbo.collection("communities").findOne({_id:ObjectId(user.user.activeCommunity)}).then(community => community);
       if (!community) return interaction.send(`Community not found.`);
       return interaction.send(`You are in the community \`${community.community.name}\``);
