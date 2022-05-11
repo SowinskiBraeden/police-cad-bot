@@ -16,7 +16,7 @@ module.exports = {
    * @param {string[]} args
    * @param {*} param3
   */
-  run: async (client, message) => {
+  run: async (client, message, args) => {
     if (args.length==0) return message.channel.send(`You must provide a channel.`);
     let channelid = args[0].replace('<#', '').replace('>', '');
     let channel = client.channels.cache.get(channelid);
@@ -54,7 +54,7 @@ module.exports = {
       
       let channelid = args[0].value;
       let channel = client.channels.cache.get(channelid);
-      if (!channel) return message.channel.send(`Cannot find that channel.`);
+      if (!channel) return interaction.send(`Cannot find that channel.`);
       if (channel.type=="voice") return interaction.send(`Connot set voice channel to preferred channel.`);
       if (channel.deleted) return interaction.send(`Connot set deleted channel to preferred channel.`);
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
