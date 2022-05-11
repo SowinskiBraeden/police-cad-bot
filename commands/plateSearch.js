@@ -17,7 +17,7 @@ module.exports = {
    * @param {string[]} args
    * @param {*} param3
   */
-  run: async (client, message, args) => {
+  run: async (client, message, args, { GuildDB }) => {
     let useCommand = await client.verifyUseCommand(GuildDB.serverID, message.member.roles.cache, false);
     if (!useCommand) return message.channel.send("You don't have permission to use this command");
 
