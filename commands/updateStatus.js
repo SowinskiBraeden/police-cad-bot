@@ -86,8 +86,8 @@ module.exports = {
       if (!useCommand) return interaction.send("You don't have permission to use this command");
 
       let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
-      if (!user) return interaction.send(`You are not logged in ${message.author}`);
-      if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command.`);
+      if (!user) return interaction.send(`You are not logged in <@${interactoin.member.user.id}>`);
+      if (user.user.activeCommunity==null) return interaction.send(`You must join a community to use this command.`);
       let onDuty=null;
       let updateDuty=false;
       let status = args[0].value;
