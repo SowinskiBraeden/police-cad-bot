@@ -48,7 +48,10 @@ module.exports = {
     
     // If panic is disabled, enable panic
     } else {
-      client.forceUpdateStatus(message.channel, message.author.id, 'Panic');
+      let user = await client.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
+      if (!user) return message.channel.send(`You are not logged in.`);
+      if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command.`);  
+      client.forceUpdateStatus('Panic', user);
 
       let req = {
         userID: user._id,
@@ -106,7 +109,10 @@ module.exports = {
         return;
       // If panic is disabled, enable panic
       } else {
-        client.forceUpdateStatus(interaction, interaction.member.user.id, 'Panic');
+        let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
+        if (!user) return interaction.send(`You are not logged in.`);
+        if (user.user.activeCommunity==null) return interaction.send(`You must join a community to use this command.`);  
+        client.forceUpdateStatus('Panic', user);
          
         let req = {
           userID: user._id,

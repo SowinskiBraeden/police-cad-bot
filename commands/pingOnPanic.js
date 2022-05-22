@@ -35,7 +35,7 @@ module.exports = {
       }
     
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
-      return interaction.send(`Current Ping on Panic Status: \` ${guild.server.pingOnPanic.toString().toUpperCase()} \``);  
+      return interaction.send(`Current Ping on Panic Status: \` ${guild.server.pingOnPanic} \``);  
     },
   },
 }
