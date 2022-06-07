@@ -18,7 +18,7 @@ module.exports = {
 
   Presence: {
     status: "online", // You can show online, idle, and dnd
-    name: "GTA V", // The message shown
+    name: "Grand Theft Auto V", // The message shown
     type: "PLAYING", // PLAYING, WATCHING, LISTENING, STREAMING
   },
 }
