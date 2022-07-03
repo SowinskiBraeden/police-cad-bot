@@ -97,6 +97,26 @@ class LinesPoliceCadBot extends Client {
     });
   }
 
+  /* Not yet done
+  async canUseCommand(interaction, GuildDB) {
+    if (!GuildDB.customChannelStatus) return true;
+    let channel_id;
+    for (let i = 0; i < GuildDB.allowedChannels.length; i++) {
+      channel_id = GuildDB.allowedChannels[i];
+      if(interaction.guild.channels.cache.get(channel_id) === undefined)  { 
+        this.dbo.collection("prefixes").updateOne({"server.serverID":interaction.guild.id},{$pull:{"server.allowedChannels":channel_id},$set:{"server.hasCustomChannels":false}},function(err, res) {
+          if (err) throw err;
+          GuildDB.allowedChannels.splice(i, i+1);
+          if (GuildDB.allowedChannels.length == 0) GuildDB.customChannelStatus = false;
+        });
+      }
+    }
+    if (!GuildDB.allowedChannels.includes(interaction.channel_id)) {
+      return false;
+    }
+  }
+  */
+
   exists(n) {return null != n && undefined != n && "" != n}
 
   LoadCommands() {
