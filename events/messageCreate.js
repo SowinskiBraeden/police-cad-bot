@@ -35,24 +35,6 @@ module.exports = async (client, message) => {
 
   //Executing the codes when we get the command or aliases
   if (cmd) {
-    if (
-      (cmd.permissions &&
-        cmd.permissions.channel &&
-        !message.channel
-          .permissionsFor(client.user)
-          .has(cmd.permissions.channel)) ||
-      (cmd.permissions &&
-        cmd.permissions.member &&
-        !message.channel
-          .permissionsFor(message.member)
-          .has(cmd.permissions.member))
-    )
-      return client.sendError(
-        message.channel,
-        "Missing Permissions!" + GuildDB.DJ
-          ? " You need the correct role to access this command."
-          : ""
-      );
     cmd.run(client, message, args, { GuildDB });
     client.CommandsRan++;
   } else return;
