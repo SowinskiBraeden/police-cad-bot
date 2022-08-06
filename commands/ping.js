@@ -9,16 +9,6 @@ module.exports = {
   	member: [],
 	},
 	aliases: [],
-	/**
-   *
-   * @param {require("../structures/LinesPoliceCadBot")} client
-   * @param {import("discord.js").Message} message
-   * @param {string[]} args
-   * @param {*} param3
-  */
-  run: async (client, message) => {
-  	return message.channel.send('Pong!');
-  },
   SlashCommand: {
   	options: [],	
     /**

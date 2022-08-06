@@ -9,30 +9,6 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
-  aliases: ["leave"],
-  /**
-   *
-   * @param {require("../structures/LinesPoliceCadBot")} client
-   * @param {import("discord.js").MessageCreate} message
-   * @param {string[]} args
-   * @param {*} param3
-  */
-  run: async (client, message) => {
-    let user = await client.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in.`);
-    let myReq = {
-      userID: user._id
-    };
-    const socket = io.connect(client.config.socket);
-    socket.emit('bot_leave_community', myReq);
-    socket.on('bot_left_community', (data) => {
-      socket.disconnect()
-      if (data.error) {
-        return message.channel.send(`${data.error}`);
-      }
-      return message.channel.send(`${data.message}`);
-    });
-  },
   SlashCommand: {
     options: [],  
     /**

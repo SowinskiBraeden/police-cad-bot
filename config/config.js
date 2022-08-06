@@ -1,6 +1,6 @@
 module.exports = {
 	Dev: "PRODUCTION",
-	Version: "3.0.0",
+	Version: "3.1.2",
   Admins: ["362791661274660874"], // Admins of the bot
 	DefaultPrefix: "?",
 	socket: "https://www.linespolice-cad.com/",

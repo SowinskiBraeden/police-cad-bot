@@ -8,36 +8,6 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
-  aliases: [],
-  /**
-   *
-   * @param {require("../structures/LinesPoliceCadBot")} client
-   * @param {import("discord.js").MessageCreate} message
-   * @param {string[]} args
-   * @param {*} param3
-  */
-  run: async (client, message, args) => {
-    if (args.length==0) return message.channel.send(`You must provide a \`Ping On Role Status\` and a \`role\` to ping.`);  
-    if (args[0]=="false") {
-      // disable ping on panic and remove ping role
-      client.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.pingOnPanic":false,"server.pingRole":null}},function(err, res) {
-        if (err) throw err;
-        return message.channel.send(`Successfully disabled ping role on panic.`);
-      });
-    } else if (args[0]=="true") {
-      if (!args[1]) return message.channel.send(`You must provide a \`role\` to ping .`);
-      let roleid = args[1].replace('<@&', '').replace('>', '');
-      let role = message.guild.roles.cache.find(x => x.id == roleid);
-      if (role == undefined) {
-        return message.channel.send(`Uh Oh! The role ${args[1]} connot be found.`);
-      } else {
-        client.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$set:{"server.pingRole":roleid,"server.pingOnPanic":true}},function(err, res) {
-          if (err) throw err;
-          return message.channel.send(`Successfully set ${args[1]} to be pinged on panic.`);
-        });
-      }
-    } else return message.channel.send(`\`${args[0]}\` is an invalid status, use \`true\` or \`false\``);
-  },
   SlashCommand: {
     options: [
       {

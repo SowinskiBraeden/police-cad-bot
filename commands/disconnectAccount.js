@@ -2,28 +2,12 @@ const { MessageEmbed } = require('discord.js');
 
 module.exports = {
 	name: "logout",
-	description: "Disconnect your Lines Police CAD account from Discord",
+	description: "Disconnect your Discord account from the Lines Police CAD Database",
 	usage: "",
 	permissions: {
   	channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
   	member: [],
 	},
-	aliases: [],
-	/**
-   *
-   * @param {require("../structures/LinesPoliceCadBot")} client
-   * @param {import("discord.js").Message} message
-   * @param {string[]} args
-   * @param {*} param3
-  */
-  run: async (client, message) => {
-    let user = await client.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You cannot logout if your not logged in.`);
-    client.dbo.collection("users").updateOne({"user.discord.id":message.author.id},{$unset:{"user.discord":""}, $set:{"user.discordConnected":false}},function(err,res) {
-      if (err) throw err;
-      return message.channel.send(`Succesfully disconnected you Discord account.`);
-    });
-  },
   SlashCommand: {
   	options: [],	
     /**

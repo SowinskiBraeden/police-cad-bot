@@ -8,36 +8,7 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
-  aliases: [],
-  /**
-   *
-   * @param {require("../structures/LinesPoliceCadBot")} client
-   * @param {import("discord.js").MessageCreate} message
-   * @param {string[]} args
-   * @param {*} param3
-  */
-  run: async (client, message) => {
-    let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
-    if (guild.server.hasCustomChannels==false) {
-      return message.channel.send('There are no channels set for the bot.');
-    }
-
-    let channels = ``;
-    for (let i = 0; i < guild.server.allowedChannels.length; i++) {
-      if (guild.server.allowedChannels[i] == undefined) break;
-      if (channels.length==0) channels += `<#${guild.server.allowedChannels[i]}>`;
-      else channels += `\n<#${guild.server.allowedChannels[i]}>`;
-    }
-    let channelsEmbed = new MessageEmbed()
-      .setColor('#0099ff')
-      .setDescription('**Allowed Channels to use the Bot**')
-      .addFields(
-        { name: `There are currently ${guild.server.allowedChannels.length} allowed channels.`, value: `${channels}`, inline: true },
-      )
-      .setFooter('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
-    return message.channel.send({ embeds: [channelsEmbed] });
-  },
-  SlashCommand: {
+   SlashCommand: {
     options: [],  
     /**
      *

@@ -9,32 +9,6 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
-  aliases: ["join"],
-  /**
-   *
-   * @param {require("../structures/LinesPoliceCadBot")} client
-   * @param {import("discord.js").MessageCreate} message
-   * @param {string[]} args
-   * @param {*} param3
-  */
-  run: async (client, message, args) => {
-    let user = await client.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in.`);
-    if (args.length==0) return message.channel.send(`You must provide a \`Community Code\`.`);
-    let myReq = {
-      userID: user._id,
-      communityCode: args[0]
-    };
-    const socket = io.connect(client.config.socket);
-    socket.emit('bot_join_community', myReq);
-    socket.on('bot_joined_community', (data) => {
-      socket.disconnect()
-      if (data.error) {
-        return message.channel.send(`${data.error}`);
-      }
-      return message.channel.send(`Successfully joined the community \` ${data.commName} \``)
-    });
-  },
   SlashCommand: {
     options: [
       {

@@ -8,20 +8,7 @@ module.exports = {
   	channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
   	member: [],
 	},
-	aliases: [],
-	/**
-   *
-   * @param {require("../structures/LinesPoliceCadBot")} client
-   * @param {import("discord.js").Message} message
-   * @param {string[]} args
-   * @param {*} param3
-  */
-  run: async (client, message) => {
-    let user = await client.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (user==null) return message.channel.send(`You are not logged in ${message.author}`);
-    return message.author.send(`${message.author} Logged in as **${user.user.username}**  |  **${user.user.email}**`);
-  },
-  SlashCommand: {
+	SlashCommand: {
     options: [],  
     /**
      *

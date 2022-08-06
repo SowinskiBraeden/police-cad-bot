@@ -9,51 +9,6 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
-  aliases: ["update_status"],
-  /**
-   *
-   * @param {require("../structures/LinesPoliceCadBot")} client
-   * @param {import("discord.js").Message} message
-   * @param {string[]} args
-   * @param {*} param3
-  */
-  run: async (client, message, args, { GuildDB }) => {
-    let useCommand = await client.verifyUseCommand(GuildDB.serverID, message.member.roles.cache, false);
-    if (!useCommand) return message.channel.send("You don't have permission to use this command");
-
-    let validStatus=['10-8','10-7','10-6','10-11','10-23','10-97','10-15','10-70','10-80', '10-41', '10-42'];
-    let user = await client.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in ${message.author}`);
-    if (user.user.activeCommunity==null) return message.channel.send(`You must join a community to use this command.`);
-    if (args.length==0) return message.channel.send(`You must provide a new status.`);
-    if (!validStatus.includes(args[0])) return message.channel.send(`\`${args[0]}\` is a Invalid Status.`);
-    let onDuty=null;
-    let updateDuty=false;
-    let status = args[0]
-    if (args[0]=='10-41') {
-      onDuty=true;
-      updateDuty=true;
-      status='Online';
-    }
-    if (args[0]=='10-42') {
-      onDuty=false;
-      updateDuty=true;
-      status='Offline';
-    }
-    let req={
-      userID: user._id,
-      status: status,
-      setBy: 'Self',
-      onDuty: onDuty,
-      updateDuty: updateDuty
-    };
-    const socket = io.connect(client.config.socket);
-    socket.emit('bot_update_status', req);
-    socket.on('bot_updated_status', (res) => {
-      message.channel.send(`Succesfully updated status to \`${args[0]}\` ${message.author}`);
-      socket.disconnect();
-    });
-  },
   SlashCommand: {
     options: [
       {

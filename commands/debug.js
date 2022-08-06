@@ -5,63 +5,10 @@ module.exports = {
   name: "debug",
   description: "Debug for bot admin",
   usage: "command",
+  debug: true,
   permissions: {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
-  },
-  aliases: [],
-  /**
-   *
-   * @param {require("../structures/LinesPoliceCadBot")} client
-   * @param {import("discord.js").Message} message
-   * @param {string[]} args
-   * @param {*} param3
-  */
-  run: async (client, message, args, { GuildDB }) => {
-    if (!client.config.Admins.includes(message.author.id)) return;
-
-    if (args.length==0) return message.channel.send('Debug Error: Provide a debug command');
-    if (!client.exists(args[0])) return message.channel.send('Debug Error: Provide a valid debug command');
-
-    let debugConsole = false
-    if (client.exists(args[1])&&args[1]=='true') debugConsole = true
-
-    let command = args[0].toLowerCase();
-
-    if (command == 'server' || command == 'guild') {
-      if (debugConsole) {
-        client.log("Debug: Guild >> ");
-        console.debug(GuildDB);
-      }
-      return message.channel.send("Debug: guild >> read log output")
-
-    } else if (command == "interaction") {
-      return message.channel.send(`Use slash command to debug \`interaction\``);
-    
-    } else if (command == "message") {
-      if (debugConsole) {
-        client.log("Debug: message >> ");
-        console.debug(message);
-      }
-      return message.channel.send("Debug: message >> read log output");
-    
-    } else if (command == "pingserver") {
-      const socket = io.connect(client.config.socket);
-      socket.emit('botping', {message:'hello there'});
-      socket.on('botpong', (data) => {
-        if (debugConsole) client.log('Debug: Socket responded')
-        return message.channel.send(`Debug: Socket responded`)
-        socket.disconnect();
-      });
-    
-    } else if (command == "apicheck") {
-      // TODO: Make axios call to api and get api health
-      return message.channel.send('Debug Notice: \`apicheck\` is currently unavailable'); 
-    
-    } else {
-      return message.channel.send('Debug Error: Provide a valid debug command');
-    
-    }
   },
   SlashCommand: {
     options: [

@@ -8,28 +8,6 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: ["MANAGE_GUILD"],
   },
-  aliases: ["set_channel", "addchannel", "add_channel"],
-  /**
-   *
-   * @param {require("../structures/LinesPoliceCadBot")} client
-   * @param {import("discord.js").MessageCreate} message
-   * @param {string[]} args
-   * @param {*} param3
-  */
-  run: async (client, message, args) => {
-    if (args.length==0) return message.channel.send(`You must provide a channel.`);
-    let channelid = args[0].replace('<#', '').replace('>', '');
-    let channel = client.channels.cache.get(channelid);
-    if (!channel) return message.channel.send(`Cannot find that channel.`);
-    if (channel.type=="voice") return message.channel.send(`Connot set voice channel to preferred channel.`);
-    if (channel.deleted) return message.channel.send(`Connot set deleted channel to preferred channel.`);
-    let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":message.guild.id}).then(guild => guild);
-    if (client.exists(guild.server.allowedChannels)&&guild.server.allowedChannels.includes(channelid)) return message.channel.send(`The channel ${args[0]} has already been added.`);
-    client.dbo.collection("prefixes").updateOne({"server.serverID":message.guild.id},{$push:{"server.allowedChannels":channelid},$set:{"server.hasCustomChannels":true}},function(err, res) {
-      if (err) throw err;
-      return message.channel.send(`Successfully added ${args[0]} to allowed channels.`);
-    });
-  },
   SlashCommand: {
     options: [
       {

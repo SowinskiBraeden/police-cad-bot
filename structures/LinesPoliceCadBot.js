@@ -126,7 +126,7 @@ class LinesPoliceCadBot extends Client {
       else
         files.forEach((file) => {
           let cmd = require(CommandsDir + "/" + file);
-          if (!cmd.name || !cmd.description || !cmd.run)
+          if (!cmd.name || !cmd.description)
             return this.log(
               "Unable to load Command: " +
                 file.split(".")[0] +
@@ -186,42 +186,27 @@ class LinesPoliceCadBot extends Client {
   }
 
   async GetGuild(GuildId) {
-    let prefix;
-    let customRoleStatus;
-    let customChannelStatus;
-    let allowedChannels;
     let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":GuildId}).then(guild => guild);
 
-      // If guild not found, generate guild default
-      if (!guild) {
-        let newGuild = {
-          server: {
-            serverID: GuildId,
-            prefix: this.config.DefaultPrefix,
-            hasCustomRoles: false,
-            hasCustomChannels: false,
-          }
+    // If guild not found, generate guild default
+    if (!guild) {
+      let guild = {
+        server: {
+          serverID: GuildId,
+          prefix: this.config.DefaultPrefix,
+          hasCustomRoles: false,
+          hasCustomChannels: false,
+          allowedChannels: [],
         }
-        this.dbo.collection("prefixes").insertOne(newGuild, function(err, res) {
-          if (err) throw err;
-        });
-        prefix = newGuild.server.prefix;
-        customRoleStatus = newGuild.server.hasCustomRoles;
-        customChannelStatus = newGuild.server.hasCustomChannels;
-        allowedChannels = null;
-      } else {
-        prefix = guild.server.prefix;
-        customRoleStatus = guild.server.hasCustomRoles;
-        customChannelStatus = guild.server.hasCustomChannels;
-        if (guild.server.allowedChannels!=undefined||guild.server.allowedChannels!=null&&guild.server.allowedChannels.length>0) {
-          allowedChannels = guild.server.allowedChannels;
-        } else allowedChannels = null;
       }
+      this.dbo.collection("prefixes").insertOne(guild, function(err, res) {
+        if (err) throw err;
+      });
+    }
     let guildData = {
-      prefix: prefix,
-      allowedChannels: allowedChannels,
-      customRoleStatus: customRoleStatus,
-      customChannelStatus: customChannelStatus,
+      allowedChannels: guild.server.allowedChannels,
+      customRoleStatus: guild.server.hasCustomRoles,
+      customChannelStatus: guild.server.hasCustomChannels,
       serverID: GuildId
     }
     return guildData;

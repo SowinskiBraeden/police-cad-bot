@@ -29,11 +29,6 @@ module.exports = (client, guild) => {
         await GuildAPI.commands.post({ data: dataStuff });
       } catch (e) {
         client.log('Error: API missing permissions, re-invite the bot');
-
-        // Forces bot to leave server
-        let guildID = client.guilds.cache.get(guild);
-        if (guildID) guildID.leave();
-        client.log(`Server stats is now down to ${client.guilds.cache.size}`);
       }
     });
   });

@@ -9,58 +9,6 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
-  aliases: ["firearm_search", "firearmdb", "firearm_db"],
-  /**
-   *
-   * @param {require("../structures/LinesPoliceCadBot")} client
-   * @param {import("discord.js").Message} message
-   * @param {string[]} args
-   * @param {*} param3
-  */
-  run: async (client, message, args) => {
-    let useCommand = await client.verifyUseCommand(GuildDB.serverID, message.member.roles.cache, false);
-    if (!useCommand) return message.channel.send("You don't have permission to use this command");
-
-    let user = await client.dbo.collection("users").findOne({"user.discord.id":message.author.id}).then(user => user);
-    if (!user) return message.channel.send(`You are not logged in.`);
-    if (args.length==0) return message.channel.send(`You are missing a \`Serial Number\`.`);
-    let data = {
-      user: user,
-      query: {
-        serialNumber: args[0],
-        activeCommunityID: user.user.activeCommunity
-      }
-    }
-    const socket = io.connect(client.config.socket);
-    socket.emit('bot_firearm_search', data);
-    socket.on('bot_firearm_search_results', results => {
-      if (results.user._id==user._id) {
-        if (results.firearms.length==0) {
-          return message.channel.send(`No Firearms found ${message.author}`);
-        }
-
-        for (let i = 0; i < results.firearms.length; i++) {
-          let firearmResult = new MessageEmbed()
-          .setColor('#0099ff')
-          .setTitle(`**${results.firearms[i].firearm.serialNumber} | ${results.firearms[i]._id}**`)
-          .setURL('https://discord.gg/jgUW656v2t')
-          .setAuthor('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
-          .setDescription('Firearm Search Results')
-          .addFields(
-            { name: `**Serial Number**`, value: `\`${results.firearms[i].firearm.serialNumber}\``, inline: true },
-            { name: `**Type**`, value: `\`${results.firearms[i].firearm.weaponType}\``, inline: true },
-            { name: `**Owner**`, value: `\`${results.firearms[i].firearm.registeredOwner}\``, inline: true },
-          )
-          // Other details
-          let isStolen = results.firearms[i].firearm.isStolen;
-          if (isStolen=="false"||isStolen==false) firearmResult.addFields({name:`**Stolen**`,value:'\`No\`',inline: true});
-          if (isStolen=="true"||isStolen==true) firearmResult.addFields({name:`**Stolen**`,value:'\`Yes\`',inline: true});
-          message.channel.send({ embeds: [firearmResult] });
-        }
-      }
-      socket.disconnect();
-    });
-  },
   SlashCommand: {
     options: [
       {
