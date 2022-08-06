@@ -28,8 +28,7 @@ module.exports = (client, guild) => {
       try {
         await GuildAPI.commands.post({ data: dataStuff });
       } catch (e) {
-        // client.log('Error: API missing permissions');
-         
+        client.log('Error: API missing permissions');
       }
     });
   });
