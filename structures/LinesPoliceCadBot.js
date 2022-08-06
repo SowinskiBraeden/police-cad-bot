@@ -188,7 +188,7 @@ class LinesPoliceCadBot extends Client {
     let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":GuildId}).then(guild => guild);
 
     // If guild not found, generate guild default
-    if (!guild) {
+    if (!guild || !guild.server) {
       let guild = {
         server: {
           serverID: GuildId,
