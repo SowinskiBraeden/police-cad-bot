@@ -1,7 +1,7 @@
 const { MessageEmbed } = require('discord.js');
 
 module.exports = {
-	name: "logout",
+	name: "disconnect_account",
 	description: "Disconnect your Discord account from the Lines Police CAD Database",
 	usage: "",
 	permissions: {

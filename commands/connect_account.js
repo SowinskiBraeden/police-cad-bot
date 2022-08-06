@@ -1,7 +1,7 @@
 const { MessageEmbed } = require('discord.js');
 
 module.exports = {
-	name: "connectAccount",
+	name: "connect_account",
 	description: "Connect your Discord Account to the Lines Police CAD Database",
 	usage: "",
 	permissions: {

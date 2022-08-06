@@ -28,39 +28,38 @@ class LinesPoliceCadBot extends Client {
     this.Ready = false;
 
     this.ws.on("INTERACTION_CREATE", async (interaction) => {
-      client.log("Interaction")
       let GuildDB = await this.GetGuild(interaction.guild_id);
-
+      
       if (interaction.type==3) return;
       
-
       const command = interaction.data.name.toLowerCase();
       const args = interaction.data.options;
-
+      
       //Easy to send respnose so ;)
       interaction.guild = await this.guilds.fetch(interaction.guild_id);
       interaction.send = async (message) => {
         return await this.api
-          .interactions(interaction.id, interaction.token)
-          .callback.post({
-            data: {
-              type: 4,
-              data:
-                typeof message == "string"
-                  ? { content: message }
-                  : message.type && message.type === "rich"
-                  ? { embeds: [message] }
-                  : message,
-            },
+        .interactions(interaction.id, interaction.token)
+        .callback.post({
+          data: {
+            type: 4,
+            data:
+            typeof message == "string"
+            ? { content: message }
+            : message.type && message.type === "rich"
+            ? { embeds: [message] }
+            : message,
+          },
           });
-      };
-      let cmd = client.commands.get(command);
+        };
+        let cmd = client.commands.get(command);
+        client.log("Interaction - "+cmd.name);
       if (cmd.SlashCommand && cmd.SlashCommand.run)
         cmd.SlashCommand.run(this, interaction, args, { GuildDB });
-    });
+      });
 
-    const client = this;
-  }
+      const client = this;
+    }
 
   async connectMongo(mongoURI, dbo) {
     this.db = await MongoClient.connect(mongoURI,{useUnifiedTopology:true});
