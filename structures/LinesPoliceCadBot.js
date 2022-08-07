@@ -188,13 +188,10 @@ class LinesPoliceCadBot extends Client {
     let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":GuildId}).then(guild => guild);
 
     // If guild not found, generate guild default
-    if (!guild || !guild.server) {
+    if (!guild) {
       let guild = {
         server: {
           serverID: GuildId,
-          prefix: this.config.DefaultPrefix,
-          hasCustomRoles: false,
-          hasCustomChannels: false,
           allowedChannels: [],
         }
       }
@@ -204,8 +201,7 @@ class LinesPoliceCadBot extends Client {
     }
     let guildData = {
       allowedChannels: guild.server.allowedChannels,
-      customRoleStatus: guild.server.hasCustomRoles,
-      customChannelStatus: guild.server.hasCustomChannels,
+      customChannelStatus: guild.server.allowedChannels.length > 0 ? true : false,
       serverID: GuildId
     }
     return guildData;
