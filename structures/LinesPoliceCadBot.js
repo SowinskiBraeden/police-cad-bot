@@ -189,7 +189,7 @@ class LinesPoliceCadBot extends Client {
 
     // If guild not found, generate guild default
     if (!guild) {
-      let guild = {
+      guild = {
         server: {
           serverID: GuildId,
           allowedChannels: [],
