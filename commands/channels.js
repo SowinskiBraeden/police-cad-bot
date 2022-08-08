@@ -29,15 +29,14 @@ module.exports = {
 
       let channels = ``;
       for (let i = 0; i < guild.server.allowedChannels.length; i++) {
-        if (guild.server.allowedChannels[i] == undefined) break;
-        if (channels.length==0) channels += `<#${guild.server.allowedChannels[i]}>`;
+        if (client.exists(guild.server.allowedChannels[i])) continue;
         else channels += `\n<#${guild.server.allowedChannels[i]}>`;
       }
       let channelsEmbed = new MessageEmbed()
         .setColor('#0099ff')
         .setDescription('**Allowed Channels to use the Bot**')
         .addFields(
-          { name: `There are currently ${guild.server.allowedChannels.length} allowed channels.`, value: `${channels}`, inline: true },
+          { name: `There are currently ${guild.server.allowedChannels.length} allowed channels.`, value: `Channels:${channels}`, inline: true },
         )
         .setFooter('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
       return interaction.send({ embeds: [channelsEmbed] });      
