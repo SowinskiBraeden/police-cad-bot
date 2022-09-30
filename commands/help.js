@@ -27,7 +27,6 @@ module.exports = {
      */
 
     run: async (client, interaction, args, { GuildDB }) => {
-      console.log(args)
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
         return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
