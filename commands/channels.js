@@ -35,7 +35,7 @@ module.exports = {
       let channelsEmbed = new EmbedBuilder()
         .setColor('#0099ff')
         .setDescription('**Allowed Channels to use the Bot**')
-        .addFieldss(
+        .addFields(
           { name: `There are currently ${guild.server.allowedChannels.length} allowed channels.`, value: `Channels:${channels}`, inline: true },
         )
         .setFooter('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')

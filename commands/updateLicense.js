@@ -84,7 +84,7 @@ module.exports = {
             .setURL('https://discord.gg/jgUW656v2t')
             .setAuthor('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
             .setDescription('Name Search Results')
-            .addFieldss(
+            .addFields(
               { name: `**First Name**`, value: `\`${results.civilians[i].civilian.firstName}\``, inline: true },
               { name: `**Last Name**`, value: `\`${results.civilians[i].civilian.lastName}\``, inline: true },
               { name: `**DOB**`, value: `\`${results.civilians[i].civilian.birthday}\``, inline: true },

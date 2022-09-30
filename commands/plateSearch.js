@@ -59,7 +59,7 @@ module.exports = {
             .setURL('https://discord.gg/jgUW656v2t')
             .setAuthor('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
             .setDescription('Plate Search Results')
-            .addFieldss(
+            .addFields(
               { name: `**Plate #**`, value: `\`${results.vehicles[i].vehicle.plate}\``, inline: true },
               { name: `**Vin #**`, value: `\`${results.vehicles[i].vehicle.vin}\``, inline: true },
               { name: `**Model**`, value: `\`${results.vehicles[i].vehicle.model}\``, inline: true },
@@ -70,12 +70,12 @@ module.exports = {
             let validRegistration = results.vehicles[i].vehicle.validRegistration;
             let validInsurance = results.vehicles[i].vehicle.validInsurance;
             let stolen = results.vehicles[i].vehicle.isStolen;
-            if (validRegistration=='1') plateResult.addFieldss({ name: `**Registration**`, value: `\`Valid\``, inline: true });
-            if (validRegistration=='2') plateResult.addFieldss({ name: `**Registration**`, value: `\`InValid\``, inline: true });
-            if (validInsurance=='1') plateResult.addFieldss({ name: `**Insurance**`, value: `\`Valid\``, inline: true });
-            if (validInsurance=='2') plateResult.addFieldss({ name: `**Insurance**`, value: `\`InValid\``, inline: true });
-            if (stolen=='1') plateResult.addFieldss({ name: `**Stolen**`, value: `\`No\``, inline: true });
-            if (stolen=='2') plateResult.addFieldss({ name: `**Stolen**`, value: `\`Yes\``, inline: true });
+            if (validRegistration=='1') plateResult.addFields({ name: `**Registration**`, value: `\`Valid\``, inline: true });
+            if (validRegistration=='2') plateResult.addFields({ name: `**Registration**`, value: `\`InValid\``, inline: true });
+            if (validInsurance=='1') plateResult.addFields({ name: `**Insurance**`, value: `\`Valid\``, inline: true });
+            if (validInsurance=='2') plateResult.addFields({ name: `**Insurance**`, value: `\`InValid\``, inline: true });
+            if (stolen=='1') plateResult.addFields({ name: `**Stolen**`, value: `\`No\``, inline: true });
+            if (stolen=='2') plateResult.addFields({ name: `**Stolen**`, value: `\`Yes\``, inline: true });
             return interaction.send({ embeds: [plateResult] });
           }
         }

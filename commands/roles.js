@@ -37,7 +37,7 @@ module.exports = {
       let rolesEmbed = new EmbedBuilder()
         .setColor('#0099ff')
         .setDescription('|**Allowed Roles to use the Bot**')
-        .addFieldss(
+        .addFields(
           { name: `There are currently **${guild.server.allowedRoles.length}** allowed roles.`, value: `\`${roles}\``, inline: true },
         )
         .setFooter('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
