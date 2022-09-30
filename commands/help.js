@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, ButtonStyle } = require("discord.js");
 
 module.exports = {
   name: "help",
@@ -59,7 +59,7 @@ module.exports = {
         let embed = new EmbedBuilder()
           .setAuthor({ name: `Command: ${cmd.name}`, iconURL: client.config.IconURL })
           .setDescription(cmd.description)
-          .setColor("GREEN")
+          .setColor(ButtonStyle.Success) // Green
           .addFields({
             name: "Usage",
             value: `\`/${cmd.name}${cmd.usage ? " " + cmd.usage : ""}\``,
