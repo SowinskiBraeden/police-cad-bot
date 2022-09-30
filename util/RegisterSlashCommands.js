@@ -1,36 +1,38 @@
 const fs = require("fs");
 const path = require("path");
+const { Routes } = require('discord.js');
+const { REST } = require('@discordjs/rest');
 
 /**
  * Register slash commands for a guild
  * @param {require("../structures/LinesPoliceCadBot")} client
  * @param {string} guild
  */
-module.exports = (client, guild) => {
- 
-  let commandsDir = path.join(__dirname, "..", "commands");
+module.exports = async function(client, guild) {
+  const commands = [];
+  const commandFiles = fs.readdirSync(path.join(__dirname, "..", "commands")).filter(file => file.endsWith('.js'));
 
-  fs.readdir(commandsDir, (err, files) => {
-    if (err) throw err;
-    files.forEach(async (file) => {
-      let cmd = require(commandsDir + "/" + file);
-      if (!cmd.SlashCommand || !cmd.SlashCommand.run) return;
-      let dataStuff = {
-        name: cmd.name,
-        description: cmd.description,
-        options: cmd.SlashCommand.options,
-      };
+  // Place your client and guild ids here
+  const clientId = client.application.id;
+  const guildId = guild;
 
-      //Creating variables like this, So you might understand my code :)
-      let ClientAPI = client.api.applications(client.user.id);
-      let GuildAPI = ClientAPI.guilds(guild);
+  for (const file of commandFiles) {
+    const command = require(`../commands/${file}`);
+    commands.push(command);
+  }
 
-      try {
-        await GuildAPI.commands.post({ data: dataStuff });
-      } catch (e) {
-        client.log('Error: API missing permissions');
-        console.log(e)
-      }
-    });
-  });
+  const rest = new REST({ version: '10' }).setToken(client.config.Token);
+
+  try {
+    client.log(`[${guildId}] Started refreshing guild (/) commands.`);
+
+    await rest.put(
+      Routes.applicationGuildCommands(clientId, guildId),
+      { body: commands },
+    );
+
+    client.log(`[${guildId}] Successfully reloaded guild (/) commands.`);
+  } catch (error) {
+    client.error(error);
+  }
 };

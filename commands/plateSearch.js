@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const io = require('socket.io-client');
 
 module.exports = {
@@ -28,14 +28,14 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
 
       let useCommand = await client.verifyUseCommand(GuildDB.serverID, interaction.member.roles, true);
-      if (!useCommand) return interaction.send("You don't have permission to use this command");
+      if (!useCommand) return interaction.send({ content: "You don't have permission to use this command" });
       
       let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
-      if (!user) return interaction.send(`You are not logged in.`);
+      if (!user) return interaction.send({ content: `You are not logged in.` });
       let data = {
         user: user,
         query: {
@@ -49,11 +49,11 @@ module.exports = {
         
         if (results.user._id==user._id) {
           if (results.vehicles.length == 0) {
-            return interaction.send(`Plate Number \`${args[0].value}\` not found.`);
+            return interaction.send({ content: `Plate Number \`${args[0].value}\` not found.` });
           }
 
           for (let i = 0; i < results.vehicles.length; i++) {
-            let plateResult = new MessageEmbed()
+            let plateResult = new EmbedBuilder()
             .setColor('#0099ff')
             .setTitle(`**${results.vehicles[i].vehicle.plate} | ${results.vehicles[i]._id}**`)
             .setURL('https://discord.gg/jgUW656v2t')
@@ -76,7 +76,7 @@ module.exports = {
             if (validInsurance=='2') plateResult.addFields({ name: `**Insurance**`, value: `\`InValid\``, inline: true });
             if (stolen=='1') plateResult.addFields({ name: `**Stolen**`, value: `\`No\``, inline: true });
             if (stolen=='2') plateResult.addFields({ name: `**Stolen**`, value: `\`Yes\``, inline: true });
-            return interaction.send(plateResult);
+            return interaction.send({ embeds: [plateResult] });
           }
         }
         socket.disconnect();

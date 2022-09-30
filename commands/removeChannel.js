@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
   name: "removechannel",
@@ -27,27 +27,27 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
       
-      if (args.length==0) return interaction.send(`You must provide a channel.`);
+      if (args.length==0) return interaction.send({ content: `You must provide a channel.` });
       let channelid = args[0].value;
       let channel = client.channels.cache.get(channelid);
-      if (!channel) return interaction.send(`Uh Oh! The channel <#${args[0].value}> connot be found.`);
+      if (!channel) return interaction.send({ content: `Uh Oh! The channel <#${args[0].value}> connot be found.` });
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
-      if (guild.server.hasCustomChannels==false) return interaction.send(`There are no channels to be removed.`);
-      if (!guild.server.allowedChannels.includes(channelid)) return interaction.send(`The channel <#${args[0].value}> is not added to your roles.`);
+      if (guild.server.hasCustomChannels==false) return interaction.send({ content: `There are no channels to be removed.` });
+      if (!guild.server.allowedChannels.includes(channelid)) return interaction.send({ content: `The channel <#${args[0].value}> is not added to your roles.` });
       for (let i = 0; i < guild.server.allowedChannels.length; i++) {
         if (guild.server.allowedChannels[i]==channelid) {
           if ((guild.server.allowedChannels.length-1)==0) {
             client.dbo.collection("prefixes").updateOne({"server.serverID":interaction.guild.id},{$pull:{"server.allowedChannels":channelid},$set:{"server.hasCustomChannels":false}},function(err, res) {
               if (err) throw err;
-              return interaction.send(`Successfully removed <#${args[0].value}> from allowed channels! There are no more allowed channels.`);
+              return interaction.send({ content: `Successfully removed <#${args[0].value}> from allowed channels! There are no more allowed channels.` });
             });  
           } else if ((guild.server.allowedChannels.length-1)>0) {
             client.dbo.collection("prefixes").updateOne({"server.serverID":interaction.guild.id},{$pull:{"server.allowedChannels":channelid}},function(err, res) {
               if (err) throw err;
-              return interaction.send(`Successfully removed <#${args[0].value}> from allowed channels.`);
+              return interaction.send({ content: `Successfully removed <#${args[0].value}> from allowed channels.` });
             });
           }
         }

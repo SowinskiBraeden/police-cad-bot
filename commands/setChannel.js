@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
   name: "setchannel",
@@ -27,19 +27,19 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
       
       let channelid = args[0].value;
       let channel = client.channels.cache.get(channelid);
-      if (!channel) return interaction.send(`Cannot find that channel.`);
-      if (channel.type=="voice") return interaction.send(`Connot set voice channel to preferred channel.`);
-      if (channel.deleted) return interaction.send(`Connot set deleted channel to preferred channel.`);
+      if (!channel) return interaction.send({ content: `Cannot find that channel.` });
+      if (channel.type=="voice") return interaction.send({ content: `Connot set voice channel to preferred channel.` });
+      if (channel.deleted) return interaction.send({ content: `Connot set deleted channel to preferred channel.` });
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
-      if (client.exists(guild.server.allowedChannels)&&guild.server.allowedChannels.includes(channelid)) return interaction.send(`The channel <#${args[0].value}> has already been added.`);
+      if (client.exists(guild.server.allowedChannels)&&guild.server.allowedChannels.includes(channelid)) return interaction.send({ content: `The channel <#${args[0].value}> has already been added.` });
       client.dbo.collection("prefixes").updateOne({"server.serverID":interaction.guild.id},{$push:{"server.allowedChannels":channelid},$set:{"server.hasCustomChannels":true}},function(err, res) {
         if (err) throw err;
-        return interaction.send(`Successfully added <#${args[0].value}> to allowed channels.`);
+        return interaction.send({ content: `Successfully added <#${args[0].value}> to allowed channels.` });
       });
     },
   },

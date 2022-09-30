@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
 	name: "ping",
@@ -19,9 +19,9 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
-    	interaction.send('Pong!');
+    	interaction.send({ content: 'Pong!' });
     },
   },
 }

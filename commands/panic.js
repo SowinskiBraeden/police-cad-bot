@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const io = require('socket.io-client');
 
 module.exports = {
@@ -19,15 +19,15 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
 
       let useCommand = await client.verifyUseCommand(GuildDB.serverID, interaction.member.roles, true);
-      if (!useCommand) return interaction.send("You don't have permission to use this command");
+      if (!useCommand) return interaction.send({ content: "You don't have permission to use this command" });
       
       let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
-      if (!user) return interaction.send(`You are not logged in.`);
-      if (user.user.activeCommunity==null) return interaction.send(`You must join a community to use this command.`);
+      if (!user) return interaction.send({ content: `You are not logged in.` });
+      if (user.user.activeCommunity==null) return interaction.send({ content: `You must join a community to use this command.` });
       const socket = io.connect(client.config.socket);
       // If panic is enabled, disable panic
       if (user.user.dispatchStatus=='Panic') {
@@ -53,8 +53,8 @@ module.exports = {
       // If panic is disabled, enable panic
       } else {
         let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
-        if (!user) return interaction.send(`You are not logged in.`);
-        if (user.user.activeCommunity==null) return interaction.send(`You must join a community to use this command.`);  
+        if (!user) return interaction.send({ content: `You are not logged in.` });
+        if (user.user.activeCommunity==null) return interaction.send({ content: `You must join a community to use this command.` });  
         client.forceUpdateStatus('Panic', user);
          
         let req = {
@@ -65,7 +65,7 @@ module.exports = {
         socket.emit('panic_button_update', req);
         socket.disconnect();
         let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":GuildDB.serverID}).then(guild => guild);
-        if (guild.server.pingOnPanic) return interaction.send(`Attention <@&${guild.server.pingRole}>! \`${user.user.username}\` has activated panic`);
+        if (guild.server.pingOnPanic) return interaction.send({ content: `Attention <@&${guild.server.pingRole}>! \`${user.user.username}\` has activated panic` });
         return;
       }
     },

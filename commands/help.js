@@ -1,4 +1,4 @@
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
   name: "help",
@@ -28,7 +28,7 @@ module.exports = {
 
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
       let Commands = client.commands.filter((cmd) => {
         if (client.exists(cmd.debug)) return !cmd.debug
@@ -37,7 +37,7 @@ module.exports = {
           `\`/${cmd.name}${cmd.usage ? " " + cmd.usage : ""}\` - ${cmd.description}`
       );
 
-      let Embed = new MessageEmbed()
+      let Embed = new EmbedBuilder()
         .setColor(client.config.EmbedColor)
         .setDescription(`${Commands.join("\n")}
   
@@ -55,7 +55,7 @@ module.exports = {
             `❌ | Unable to find that command.`
           );
 
-        let embed = new MessageEmbed()
+        let embed = new EmbedBuilder()
           .setAuthor(`Command: ${cmd.name}`, client.config.IconURL)
           .setDescription(cmd.description)
           .setColor("GREEN")
@@ -73,7 +73,7 @@ module.exports = {
             true
           )
 
-        return interaction.send(embed);
+        return interaction.send({ embeds: [embed] });
       }
     },
   },

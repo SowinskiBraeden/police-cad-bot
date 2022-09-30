@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const io = require('socket.io-client');
 
 module.exports = {
@@ -20,11 +20,11 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
       
       let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
-      if (!user) return interaction.send(`You are not logged in.`);
+      if (!user) return interaction.send({ content: `You are not logged in.` });
       let myReq = {
         userID: user._id
       };
@@ -33,9 +33,9 @@ module.exports = {
       socket.on('bot_left_community', (data) => {
         socket.disconnect()
         if (data.error) {
-          return interaction.send(`${data.error}`);
+          return interaction.send({ content: `${data.error}` });
         }
-        return interaction.send(`${data.message}`);
+        return interaction.send({ content: `${data.message}` });
       });
     },
   },

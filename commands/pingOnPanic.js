@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
   name: "pingonpanic",
@@ -19,11 +19,11 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
     
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
-      return interaction.send(`Current Ping on Panic Status: \` ${guild.server.pingOnPanic} \``);  
+      return interaction.send({ content: `Current Ping on Panic Status: \` ${guild.server.pingOnPanic} \`` });  
     },
   },
 }

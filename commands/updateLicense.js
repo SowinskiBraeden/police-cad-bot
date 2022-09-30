@@ -1,4 +1,4 @@
-const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const io = require('socket.io-client');
 
 module.exports = {
@@ -42,14 +42,14 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
 
       let useCommand = await client.verifyUseCommand(GuildDB.serverID, interaction.member.roles, true);
-      if (!useCommand) return interaction.send("You don't have permission to use this command");
+      if (!useCommand) return interaction.send({ content: "You don't have permission to use this command" });
       
       let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
-      if (!user) return interaction.send(`You are not logged in.`);
+      if (!user) return interaction.send({ content: `You are not logged in.` });
       
       let data = {
         user: user,
@@ -66,7 +66,7 @@ module.exports = {
       socket.on("bot_name_search_results", (results) => {
         if (results.user._id==user._id) {
           if (results.civilians.length == 0) {
-            return interaction.send(`Name \`${args[0].value} ${args[1].value}\` not found.`);
+            return interaction.send({ content: `Name \`${args[0].value} ${args[1].value}\` not found.` });
           }
         }
 
@@ -78,7 +78,7 @@ module.exports = {
           if (results.civilians[i].civilian.licenseStatus == 1) licenseStatus = 'Valid';
           if (results.civilians[i].civilian.licenseStatus == 2) licenseStatus = 'Revoked';
           if (results.civilians[i].civilian.licenseStatus == 3) licenseStatus = 'None';
-          nameResult = new MessageEmbed()
+          nameResult = new EmbedBuilder()
             .setColor('#0099ff')
             .setTitle(`**${results.civilians[i].civilian.firstName} ${results.civilians[i].civilian.lastName} | ${results.civilians[i]._id}**`)
             .setURL('https://discord.gg/jgUW656v2t')
@@ -91,16 +91,16 @@ module.exports = {
               { name: `**Drivers License**`, value: `\`${licenseStatus}\``, inline: true },
               { name: `**Gender**`, value: `\`${results.civilians[i].civilian.gender}\``, inline: true }
             )
-          row = new MessageActionRow()
+          row = new ActionRowBuilder()
             .addComponents(
-              new MessageButton()
+              new ButtonBuilder()
                 .setCustomId(`license-revoke-${results.civilians[i]._id}`)
                 .setLabel("Revoke")
-                .setStyle("DANGER"),
-              new MessageButton()
+                .setStyle(ButtonStyle.Danger),
+              new ButtonBuilder()
                 .setCustomId(`license-reinstate-${results.civilians[i]._id}`)
                 .setLabel("Reinstate")
-                .setStyle("SUCCESS")
+                .setStyle(ButtonStyle.Success)
             )
         }
 

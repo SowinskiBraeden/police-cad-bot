@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
   name: "channels",
@@ -19,12 +19,12 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
 
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
       if (guild.server.hasCustomChannels==false) {
-        return interaction.send('There are no channels set for the bot.');
+        return interaction.send({ content: 'There are no channels set for the bot.' });
       }
 
       let channels = ``;
@@ -32,7 +32,7 @@ module.exports = {
         if (client.exists(guild.server.allowedChannels[i])) continue;
         else channels += `\n<#${guild.server.allowedChannels[i]}>`;
       }
-      let channelsEmbed = new MessageEmbed()
+      let channelsEmbed = new EmbedBuilder()
         .setColor('#0099ff')
         .setDescription('**Allowed Channels to use the Bot**')
         .addFields(

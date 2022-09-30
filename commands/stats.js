@@ -1,4 +1,4 @@
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 require("moment-duration-format");
 
 module.exports = {
@@ -19,17 +19,17 @@ module.exports = {
      */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
       const { version } = require("discord.js");
-      const stats = new MessageEmbed()
+      const stats = new EmbedBuilder()
           .setColor('#0099ff')
           .setTitle("Current LPC-Bot Statistics")
           .setURL(client.config.SupportServer)
           .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
           .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
           .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")
-      interaction.send(stats)
+      interaction.send({ embeds: [stats] })
     },
   },
 };

@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
   name: "checkstatus",
@@ -27,27 +27,27 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
 
       let useCommand = await client.verifyUseCommand(GuildDB.serverID, interaction.member.roles, true);
-      if (!useCommand) return interaction.send("You don't have permission to use this command");
+      if (!useCommand) return interaction.send({ content:  "You don't have permission to use this command" });
       
       let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
-      if (!user) return interaction.send(`You are not logged in.`);
-      if (user.user.activeCommunity == null) return interaction.send(`You must join a community to use this command.`);
+      if (!user) return interaction.send({ content: `You are not logged in.` });
+      if (user.user.activeCommunity == null) return interaction.send({ content: `You must join a community to use this command.` });
       if (!client.exists(args)) {
-        return interaction.send(`<@${interaction.member.user.id}>'s status: \`${user.user.dispatchStatus}\` | Set by: \`${user.user.dispatchStatusSetBy}\``);
+        return interaction.send({ content: `<@${interaction.member.user.id}>'s status: \`${user.user.dispatchStatus}\` | Set by: \`${user.user.dispatchStatusSetBy}\`` });
       } else {
         let targetUserID = args[0].value.replace('<@!', '').replace('>', '');
         let targetUser = await client.dbo.collection("users").findOne({"user.discord.id":targetUserID}).then(user => user);
         // This lame line of code to get username without ping on discord
         const User = client.users.cache.get(targetUserID);
-        if (!targetUser) return interaction.send(`Cannot find **${args[0].value}** <@${interaction.member.user.id}>`);
+        if (!targetUser) return interaction.send({ content: `Cannot find **${args[0].value}** <@${interaction.member.user.id}>` });
         if (targetUser.user.activeCommunity!=user.user.activeCommunity) {
-          return interaction.send(`You are not in the same community as \`${User.tag}\` <@${interaction.member.user.id}>`);
+          return interaction.send({ content: `You are not in the same community as \`${User.tag}\` <@${interaction.member.user.id}>` });
         }
-        return interaction.send(`<@${interaction.member.user.id}>, \`${User.tag}'s\` status: \`${targetUser.user.dispatchStatus}\` | Set by: \`${targetUser.user.dispatchStatusSetBy}\``);
+        return interaction.send({ content: `<@${interaction.member.user.id}>, \`${User.tag}'s\` status: \`${targetUser.user.dispatchStatus}\` | Set by: \`${targetUser.user.dispatchStatusSetBy}\`` });
       }
     },
   },

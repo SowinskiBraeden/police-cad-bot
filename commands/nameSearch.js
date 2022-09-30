@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const io = require('socket.io-client');
 
 module.exports = {
@@ -42,14 +42,14 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
 
       let useCommand = await client.verifyUseCommand(GuildDB.serverID, interaction.member.roles, true);
-      if (!useCommand) return interaction.send("You don't have permission to use this command");
+      if (!useCommand) return interaction.send({ content: "You don't have permission to use this command" });
       
       let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
-      if (!user) return interaction.send(`You are not logged in.`);
+      if (!user) return interaction.send({ content: `You are not logged in.` });
       let data;
 
       data = {
@@ -82,7 +82,7 @@ module.exports = {
             if (firearmLicence == undefined || firearmLicence == null) firearmLicence = 'None';
             if (firearmLicence == '2') firearmLicence = 'Valid';
             if (firearmLicence == '3') firearmLicence = 'Revoked';
-            let nameResult = new MessageEmbed()
+            let nameResult = new EmbedBuilder()
             .setColor('#0099ff')
             .setTitle(`**${results.civilians[i].civilian.firstName} ${results.civilians[i].civilian.lastName} | ${results.civilians[i]._id}**`)
             .setURL('https://discord.gg/jgUW656v2t')
@@ -125,7 +125,7 @@ module.exports = {
             if (hairColor!=null&&hairColor!=undefined&&hairColor!='') nameResult.addFields({name:'**Hair Color**',value:`\`${hairColor}\``,inline:true});
             nameResult.addFields({name:'**Organ Donor**',value:`\`${results.civilians[i].civilian.organDonor}\``,inline:true});
             nameResult.addFields({name:'**Veteran**',value:`\`${results.civilians[i].civilian.veteran}\``,inline:true});
-            interaction.send(nameResult);
+            interaction.send({ embeds: [nameResult] });
           }
         }
         socket.disconnect();

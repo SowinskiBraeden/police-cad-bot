@@ -1,6 +1,6 @@
 const LinesPoliceCadBot = require('./structures/LinesPoliceCadBot');
+const { GatewayIntentBits } = require('discord.js');
 const config = require('./config/config');
-const { Intents } = require('discord.js');
 
-let client = new LinesPoliceCadBot({ intents:[Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]}, config);
+let client = new LinesPoliceCadBot({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] }, config);
 client.build()

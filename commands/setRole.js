@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
   name: "setrole",
@@ -27,19 +27,19 @@ module.exports = {
     */
     run: async (client, interaction, args, { GuildDB }) => {
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-        return interaction.send(`You are not allowed to use the bot in this channel.`);
+        return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
       
       let roleid = args[0].value;
       let role = interaction.guild.roles.cache.find(x => x.id == roleid);
       if (role == undefined) {
-        return interaction.send(`Uh Oh! The role <@&${args[0].value}> connot be found.`);
+        return interaction.send({ content: `Uh Oh! The role <@&${args[0].value}> connot be found.` });
       } else {
         let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
-        if (client.exists(guild.server.allowedRoles)&&guild.server.allowedRoles.includes(roleid)) return interaction.send(`The role <@&${args[0].value}> has already been added.`);
+        if (client.exists(guild.server.allowedRoles)&&guild.server.allowedRoles.includes(roleid)) return interaction.send({ content: `The role <@&${args[0].value}> has already been added.` });
         client.dbo.collection("prefixes").updateOne({"server.serverID":interaction.guild.id},{$push:{"server.allowedRoles":roleid},$set:{"server.hasCustomRoles":true}},function(err, res) {
           if (err) throw err;
-          return interaction.send(`Successfully added <@&${args[0].value}> to allowed roles.`);
+          return interaction.send({ content: `Successfully added <@&${args[0].value}> to allowed roles.` });
         });
       }
     },

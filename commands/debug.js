@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const io = require('socket.io-client');
 
 module.exports = {
@@ -37,8 +37,8 @@ module.exports = {
     run: async (client, interaction, args, { GuildDB }) => {
       if (!client.config.Admins.includes(interaction.member.user.id)) return;
 
-      if (args.length==0) return message.channel.send('Debug Error: Provide a debug command');
-      if (!client.exists(args[0].value)) return interaction.send('Debug Error: Provide a valid debug command');
+      if (args.length==0) return message.channel.send({ content: 'Debug Error: Provide a debug command' });
+      if (!client.exists(args[0].value)) return interaction.send({ content: 'Debug Error: Provide a valid debug command' });
 
       let debugConsole = args[1].value;
 
@@ -46,33 +46,33 @@ module.exports = {
 
       if (command == 'server' || args[0] == 'guild') {
         if (debugConsole) client.log("Debug: Guild >> ");console.debug(GuildDB);
-        return interaction.send("Debug: guild >> read log output")
+        return interaction.send({ content: "Debug: guild >> read log output" })
 
       } else if (command == "interaction") {
         if (debugConsole) {
           client.log("Debug: interaction >> ");
           console.debug(interaction);
         }
-        return interaction.send("Debug: interaction >> read log output");
+        return interaction.send({ content: "Debug: interaction >> read log output" });
 
       } else if (command == "message") {
-        return interaction.send(`Use command with prefix to debug \`message\``);
+        return interaction.send({ content: `Use command with prefix to debug \`message\`` });
         
       } else if (command == "pingserver") {
         const socket = io.connect(client.config.socket);
         socket.emit('botping', {message:'hello there'});
         socket.on('botpong', (data) => {
           if (debugConsole) client.log('Debug: Socket responded')
-          return interaction.send(`Debug: Socket responded`)
+          return interaction.send({ content: `Debug: Socket responded` })
           socket.disconnect();
         });
       
       } else if (command == "apicheck") {
         // TODO: Make axios call to api and get api health
-        return interaction.send('Debug Notice: \`apicheck\` is currently unavailable'); 
+        return interaction.send({ content: 'Debug Notice: \`apicheck\` is currently unavailable' }); 
       
       } else {
-        return interaction.send('Debug Error: Provide a valid debug command');
+        return interaction.send({ content: 'Debug Error: Provide a valid debug command' });
       
       }
     },
