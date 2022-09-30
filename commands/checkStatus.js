@@ -9,14 +9,14 @@ module.exports = {
     member: [],
   },
   options: [
-      {
-        name: "user",
-        description: "Discord Username",
-        value: "user",
-        type: 6,
-        required: false,
-      },
-    ],  
+    {
+      name: "user",
+      description: "Discord Username",
+      value: "user",
+      type: 6,
+      required: false,
+    },
+  ],  
   SlashCommand: {
     /**
      *

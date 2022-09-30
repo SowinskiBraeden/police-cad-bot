@@ -27,6 +27,7 @@ module.exports = {
      */
 
     run: async (client, interaction, args, { GuildDB }) => {
+      console.log(args)
       if (GuildDB.customChannelStatus==true&&!GuildDB.allowedChannels.includes(interaction.channel_id)) {
         return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
@@ -56,7 +57,7 @@ module.exports = {
           );
 
         let embed = new EmbedBuilder()
-          .setAuthor(`Command: ${cmd.name}`, client.config.IconURL)
+          .setAuthor({ name: `Command: ${cmd.name}`, iconURL: client.config.IconURL })
           .setDescription(cmd.description)
           .setColor("GREEN")
           .addFields({

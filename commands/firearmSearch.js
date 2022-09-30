@@ -56,7 +56,7 @@ module.exports = {
             .setColor('#0099ff')
             .setTitle(`**${results.firearms[i].firearm.serialNumber} | ${results.firearms[i]._id}**`)
             .setURL('https://discord.gg/jgUW656v2t')
-            .setAuthor('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
+            .setAuthor({ name: 'LPS Website Support', iconURL: client.config.IconURL, url: 'https://discord.gg/jgUW656v2t' })
             .setDescription('Firearm Search Results')
             .addFields(
               { name: `**Serial Number**`, value: `\`${results.firearms[i].firearm.serialNumber}\``, inline: true },
