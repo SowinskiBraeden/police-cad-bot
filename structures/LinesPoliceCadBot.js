@@ -237,9 +237,9 @@ class LinesPoliceCadBot extends Client {
       .setTitle("An error occured")
       .setColor("RED")
       .setDescription(Error)
-      .setFooter(
-        "If you think this as a bug, please report it in the support server!"
-      );
+      .setFooter({
+        text: "If you think this as a bug, please report it in the support server!"
+      });
 
     Channel.send(embed);
   }

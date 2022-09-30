@@ -38,7 +38,7 @@ module.exports = {
         .addFields(
           { name: `There are currently ${guild.server.allowedChannels.length} allowed channels.`, value: `Channels:${channels}`, inline: true },
         )
-        .setFooter('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
+        .setFooter({ text: 'LPS Website Support', iconURL: client.config.IconURL, proxyIconURL: 'https://discord.gg/jgUW656v2t' })
       return interaction.send({ embeds: [channelsEmbed] });      
     },
   },

@@ -40,7 +40,7 @@ module.exports = {
         .addFields(
           { name: `There are currently **${guild.server.allowedRoles.length}** allowed roles.`, value: `\`${roles}\``, inline: true },
         )
-        .setFooter('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
+        .setFooter({ text: 'LPS Website Support', iconURL: client.config.IconURL, proxyIconURL: 'https://discord.gg/jgUW656v2t' })
       return interaction.send({ embeds: [rolesEmbed] });
     },
   },
