@@ -58,15 +58,15 @@ module.exports = {
             .setURL('https://discord.gg/jgUW656v2t')
             .setAuthor('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
             .setDescription('Firearm Search Results')
-            .addFields(
+            .addFieldss(
               { name: `**Serial Number**`, value: `\`${results.firearms[i].firearm.serialNumber}\``, inline: true },
               { name: `**Type**`, value: `\`${results.firearms[i].firearm.weaponType}\``, inline: true },
               { name: `**Owner**`, value: `\`${results.firearms[i].firearm.registeredOwner}\``, inline: true },
             )
             // Other details
             let isStolen = results.firearms[i].firearm.isStolen;
-            if (isStolen=="false"||isStolen==false) firearmResult.addFields({name:`**Stolen**`,value:'\`No\`',inline: true});
-            if (isStolen=="true"||isStolen==true) firearmResult.addFields({name:`**Stolen**`,value:'\`Yes\`',inline: true});
+            if (isStolen=="false"||isStolen==false) firearmResult.addFieldss({name:`**Stolen**`,value:'\`No\`',inline: true});
+            if (isStolen=="true"||isStolen==true) firearmResult.addFieldss({name:`**Stolen**`,value:'\`Yes\`',inline: true});
             interaction.send({ embeds: [firearmResult] });
           }
         }

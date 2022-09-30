@@ -88,7 +88,7 @@ module.exports = {
             .setURL('https://discord.gg/jgUW656v2t')
             .setAuthor('LPS Website Support', client.config.IconURL, 'https://discord.gg/jgUW656v2t')
             .setDescription('Name Search Results')
-            .addFields(
+            .addFieldss(
               { name: `**First Name**`, value: `\`${results.civilians[i].civilian.firstName}\``, inline: true },
               { name: `**Last Name**`, value: `\`${results.civilians[i].civilian.lastName}\``, inline: true },
               { name: `**DOB**`, value: `\`${results.civilians[i].civilian.birthday}\``, inline: true },
@@ -103,28 +103,28 @@ module.exports = {
             let weight = results.civilians[i].civilian.weight;
             let eyeColor = results.civilians[i].civilian.eyeColor;
             let hairColor = results.civilians[i].civilian.hairColor;
-            if (address != null && address != undefined && address != '') nameResult.addFields({ name: `**Address**`, value: `\`${address}\``, inline: true });
-            if (occupation != null && occupation != undefined && occupation != '') nameResult.addFields({ name: `**Occupation**`, value: `\`${occupation}\``, inline: true });
+            if (address != null && address != undefined && address != '') nameResult.addFieldss({ name: `**Address**`, value: `\`${address}\``, inline: true });
+            if (occupation != null && occupation != undefined && occupation != '') nameResult.addFieldss({ name: `**Occupation**`, value: `\`${occupation}\``, inline: true });
             if (height!=null&&height!=undefined&&height!="NaN"&&height!='') {
               if (results.civilians[i].civilian.heightClassification=='imperial') {
                 let ft = Math.floor(height/12);
                 let inch = height%12;
-                nameResult.addFields({ name: '**Height**', value: `\`${ft}'${inch}"\``, inline: true });
+                nameResult.addFieldss({ name: '**Height**', value: `\`${ft}'${inch}"\``, inline: true });
               } else {
-                nameResult.addFields({ name: '**Height**', value: `\`${height}cm\``, inline: true });
+                nameResult.addFieldss({ name: '**Height**', value: `\`${height}cm\``, inline: true });
               }
             }
             if (weight!=null&&weight!=undefined&&weight!='') {
               if (results.civilians[i].civilian.weightClassification=='imperial') {
-                nameResult.addFields({ name: '**Weight**', value: `\`${weight}lbs.\``, inline: true });
+                nameResult.addFieldss({ name: '**Weight**', value: `\`${weight}lbs.\``, inline: true });
               } else {
-                nameResult.addFields({ name: '**Weight**', value: `\`${weight}kgs.\``, inline: true });
+                nameResult.addFieldss({ name: '**Weight**', value: `\`${weight}kgs.\``, inline: true });
               } 
             }
-            if (eyeColor!=null&&eyeColor!=undefined&&eyeColor!='') nameResult.addFields({name:'**Eye Color**',value:`\`${eyeColor}\``,inline:true});
-            if (hairColor!=null&&hairColor!=undefined&&hairColor!='') nameResult.addFields({name:'**Hair Color**',value:`\`${hairColor}\``,inline:true});
-            nameResult.addFields({name:'**Organ Donor**',value:`\`${results.civilians[i].civilian.organDonor}\``,inline:true});
-            nameResult.addFields({name:'**Veteran**',value:`\`${results.civilians[i].civilian.veteran}\``,inline:true});
+            if (eyeColor!=null&&eyeColor!=undefined&&eyeColor!='') nameResult.addFieldss({name:'**Eye Color**',value:`\`${eyeColor}\``,inline:true});
+            if (hairColor!=null&&hairColor!=undefined&&hairColor!='') nameResult.addFieldss({name:'**Hair Color**',value:`\`${hairColor}\``,inline:true});
+            nameResult.addFieldss({name:'**Organ Donor**',value:`\`${results.civilians[i].civilian.organDonor}\``,inline:true});
+            nameResult.addFieldss({name:'**Veteran**',value:`\`${results.civilians[i].civilian.veteran}\``,inline:true});
             interaction.send({ embeds: [nameResult] });
           }
         }

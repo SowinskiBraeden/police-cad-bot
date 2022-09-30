@@ -42,7 +42,7 @@ module.exports = {
         .setDescription(`${Commands.join("\n")}
   
     LPC Bot Version: v${client.config.Version}`);
-      if (!args) return interaction.send(Embed);
+      if (!args) return interaction.send({ embeds: [Embed] });
       else {
         let cmd =
           client.commands.get(args[0].value) ||
@@ -59,19 +59,19 @@ module.exports = {
           .setAuthor(`Command: ${cmd.name}`, client.config.IconURL)
           .setDescription(cmd.description)
           .setColor("GREEN")
-          .addField(
-            "Usage",
-            `\`/${cmd.name}${cmd.usage ? " " + cmd.usage : ""}\``,
-            true
-          )
-          .addField(
-            "Permissions",
-            "Member: " +
+          .addFields({
+            name: "Usage",
+            value: `\`/${cmd.name}${cmd.usage ? " " + cmd.usage : ""}\``,
+            inline: true
+          })
+          .addFields({
+            name: "Permissions",
+            value: "Member: " +
               cmd.permissions.member.join(", ") +
               "\nBot: " +
               cmd.permissions.channel.join(", "),
-            true
-          )
+            inline: true
+          })
 
         return interaction.send({ embeds: [embed] });
       }

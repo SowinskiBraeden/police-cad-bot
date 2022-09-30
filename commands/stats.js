@@ -26,9 +26,7 @@ module.exports = {
           .setColor('#0099ff')
           .setTitle("Current LPC-Bot Statistics")
           .setURL(client.config.SupportServer)
-          .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
-          .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
-          .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")
+          .setDescription(`**Channels** : \`${client.channels.cache.size}\`\n**Servers** : \`${client.guilds.cache.size}\`\n**Users** : \`${client.users.cache.size}\``)
       interaction.send({ embeds: [stats] })
     },
   },
