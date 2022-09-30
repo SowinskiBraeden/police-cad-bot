@@ -8,16 +8,16 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: ["MANAGE_GUILD"],
   },
+  options: [
+    {
+      name: "channel",
+      description: "Channel to add to allowed channles",
+      value: "channel",
+      type: 7,
+      required: true,
+    },
+  ],  
   SlashCommand: {
-    options: [
-      {
-        name: "channel",
-        description: "Channel to add to allowed channles",
-        value: "channel",
-        type: 7,
-        required: true,
-      },
-    ],  
     /**
      *
      * @param {require("../structures/LinesPoliceCadBot")} client

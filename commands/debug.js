@@ -10,23 +10,23 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
+  options: [
+    {
+      name: "command",
+      description: "The debug command to execute",
+      value: "command",
+      type: 3,
+      required: true,
+    },
+    {
+      name: "consoleoutput",
+      description: "Output debug messages to console (deault=false)",
+      value: "consoleoutput",
+      type: 5,
+      required: true,
+    },
+  ],
   SlashCommand: {
-    options: [
-      {
-        name: "command",
-        description: "The debug command to execute",
-        value: "command",
-        type: 3,
-        required: true,
-      },
-      {
-        name: "consoleoutput",
-        description: "Output debug messages to console (deault=false)",
-        value: "consoleoutput",
-        type: 5,
-        required: true,
-      },
-    ],
     /**
      *
      * @param {require("../structures/LinesPoliceCadBot")} client

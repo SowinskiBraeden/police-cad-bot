@@ -8,16 +8,16 @@ module.exports = {
   	channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
   	member: ["MANAGE_GUILD"],
 	},
+	options: [
+    {
+      name: "new-prefix",
+      description: "Update prefix for the bot",
+      value: "setprefix",
+      type: 3,
+      required: true,
+    },
+  ],	
   SlashCommand: {
-  	options: [
-      {
-        name: "new-prefix",
-        description: "Update prefix for the bot",
-        value: "setprefix",
-        type: 3,
-        required: true,
-      },
-    ],	
     /**
      *
      * @param {require("../structures/LinesPoliceCadBot")} client

@@ -8,16 +8,16 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
+  options: [
+    {
+      name: "command",
+      description: "Get information on a specific command",
+      value: "command",
+      type: 3,
+      required: false,
+    },
+  ],
   SlashCommand: {
-    options: [
-      {
-        name: "command",
-        description: "Get information on a specific command",
-        value: "command",
-        type: 3,
-        required: false,
-      },
-    ],
     /**
      *
      * @param {require("../structures/LinesPoliceCadBot")} client

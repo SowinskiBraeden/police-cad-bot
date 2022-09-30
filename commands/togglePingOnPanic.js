@@ -8,23 +8,23 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
+  options: [
+    {
+      name: "toggle",
+      description: "Toggle ping on panic",
+      value: "toggle",
+      type: 5,
+      required: true,
+    },
+    {
+      name: "role",
+      description: "Role to ping on panic",
+      value: "role",
+      type: 8,
+      required: true,
+    },
+  ],  
   SlashCommand: {
-    options: [
-      {
-        name: "toggle",
-        description: "Toggle ping on panic",
-        value: "toggle",
-        type: 5,
-        required: true,
-      },
-      {
-        name: "role",
-        description: "Role to ping on panic",
-        value: "role",
-        type: 8,
-        required: true,
-      },
-    ],  
     /**
      *
      * @param {require("../structures/LinesPoliceCadBot")} client

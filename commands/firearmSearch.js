@@ -9,16 +9,16 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
+  options: [
+    {
+      name: "serialnumber",
+      description: "Firearms's serial number",
+      value: "serialnumber",
+      type: 3,
+      required: true,
+    },
+  ], 
   SlashCommand: {
-    options: [
-      {
-        name: "serialnumber",
-        description: "Firearms's serial number",
-        value: "serialnumber",
-        type: 3,
-        required: true,
-      },
-    ], 
     /**
      *
      * @param {require("../structures/LinesPoliceCadBot")} client

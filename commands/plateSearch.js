@@ -9,16 +9,16 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
+  options: [
+    {
+      name: "platenumber",
+      description: "Vehicle's license plate number",
+      value: "platenumber",
+      type: 3,
+      required: true,
+    },
+  ],  
   SlashCommand: {
-    options: [
-      {
-        name: "platenumber",
-        description: "Vehicle's license plate number",
-        value: "platenumber",
-        type: 3,
-        required: true,
-      },
-    ],  
     /**
      *
      * @param {require("../structures/LinesPoliceCadBot")} client

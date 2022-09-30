@@ -9,16 +9,16 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
+  options: [
+    {
+      name: "code",
+      description: "Join community with community code",
+      value: "code",
+      type: 3,
+      required: true,
+    },
+  ],  
   SlashCommand: {
-    options: [
-      {
-        name: "code",
-        description: "Join community with community code",
-        value: "code",
-        type: 3,
-        required: true,
-      },
-    ],  
     /**
      *
      * @param {require("../structures/LinesPoliceCadBot")} client

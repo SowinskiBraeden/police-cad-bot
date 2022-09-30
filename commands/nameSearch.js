@@ -9,30 +9,30 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
+  options: [
+    {
+      name: "firstname",
+      description: "Civilian's First Name",
+      value: "firstname",
+      type: 3,
+      required: true,
+    },
+    {
+      name: "lastname",
+      description: "Civilian's Last Name",
+      value: "lastname",
+      type: 3,
+      required: true,
+    },
+    {
+      name: "dob",
+      description: "Civilian's DOB (yyyy-mm-dd)",
+      value: "dob",
+      type: 3,
+      required: true,
+    },
+  ],
   SlashCommand: {
-    options: [
-      {
-        name: "firstname",
-        description: "Civilian's First Name",
-        value: "firstname",
-        type: 3,
-        required: true,
-      },
-      {
-        name: "lastname",
-        description: "Civilian's Last Name",
-        value: "lastname",
-        type: 3,
-        required: true,
-      },
-      {
-        name: "dob",
-        description: "Civilian's DOB (yyyy-mm-dd)",
-        value: "dob",
-        type: 3,
-        required: true,
-      },
-    ],
     /**
      *
      * @param {require("../structures/LinesPoliceCadBot")} client

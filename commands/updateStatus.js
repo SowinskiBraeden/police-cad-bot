@@ -9,22 +9,22 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: [],
   },
+  options: [
+    {
+      name: "status",
+      description: "New Status Value",
+      value: "status",
+      type: 3,
+      required: true,
+      choices: [
+        { name: '10-8 (In Service)', value: '10-8', }, { name: '10-7 (Out of Service)', value: '10-7', }, { name: '10-6 (Busy)', value: '10-6', },
+        { name: '10-11 (Traffic Stop)', value: '10-11', }, { name: '10-23 (Arrive on Scene', value: '10-23', }, { name: '10-97 (In Route)', value: '10-97' },
+        { name: '10-15 (Subject in Custody)', value: '10-15', }, { name: '10-70 (Foot Pursuit)', value: '10-70', }, { name: '10-80 (Vehicle Pursuit)', value: '10-80' },
+        { name: '10-41 (Log in to CAD)', value: '10-41', }, { name: '10-42 (Log out of CAD)', value: '10-42' },
+      ],
+    },
+  ],
   SlashCommand: {
-    options: [
-      {
-        name: "status",
-        description: "New Status Value",
-        value: "status",
-        type: 3,
-        required: true,
-        choices: [
-          { name: '10-8 (In Service)', value: '10-8', }, { name: '10-7 (Out of Service)', value: '10-7', }, { name: '10-6 (Busy)', value: '10-6', },
-          { name: '10-11 (Traffic Stop)', value: '10-11', }, { name: '10-23 (Arrive on Scene', value: '10-23', }, { name: '10-97 (In Route)', value: '10-97' },
-          { name: '10-15 (Subject in Custody)', value: '10-15', }, { name: '10-70 (Foot Pursuit)', value: '10-70', }, { name: '10-80 (Vehicle Pursuit)', value: '10-80' },
-          { name: '10-41 (Log in to CAD)', value: '10-41', }, { name: '10-42 (Log out of CAD)', value: '10-42' },
-        ],
-      },
-    ],
     /**
      *
      * @param {require("../structures/LinesPoliceCadBot")} client

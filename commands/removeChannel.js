@@ -8,16 +8,16 @@ module.exports = {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: ["remove_role"],
   },
+  options: [
+    {
+      name: "channel",
+      description: "Channel to remove from allowed channles",
+      value: "channel",
+      type: 7,
+      required: true,
+    },
+  ],  
   SlashCommand: {
-    options: [
-      {
-        name: "channel",
-        description: "Channel to remove from allowed channles",
-        value: "channel",
-        type: 7,
-        required: true,
-      },
-    ],  
     /**
      *
      * @param {require("../structures/LinesPoliceCadBot")} client
