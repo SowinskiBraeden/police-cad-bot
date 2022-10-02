@@ -160,7 +160,7 @@ class LinesPoliceCadBot extends Client {
       .setColor(this.config.EmbedColor)
       .setDescription(Error);
 
-    Channel.send(embed);
+    Channel.send({ embeds: [embed] });
   }
 
   RegisterSlashCommands() {
