@@ -50,7 +50,7 @@ class LinesPoliceCadBot extends Client {
         };
         let cmd = client.commands.get(command);
         try {
-          cmd.SlashCommand.run(this, interaction, args, { GuildDB }, start); // start is only used in ping / stats command
+          cmd.SlashCommand.run(this, interaction, args, { GuildDB });
         } catch (err) {
           const embed = new EmbedBuilder()
             .setDescription(`**Internal Error:**\nUh Oh D:  Its not you, its me.\nThis command has crashed\nContact the Developers`)
