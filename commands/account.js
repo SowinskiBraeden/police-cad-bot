@@ -22,7 +22,7 @@ module.exports = {
         return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
       let user = await client.dbo.collection("users").findOne({"user.discord.id":interaction.member.user.id}).then(user => user);
-      if (user==null) return interaction.send(`You are not logged in.`);
+      if (user==null) return interaction.send({ content: `You are not logged in.` });
       client.users.fetch(interaction.member.user.id)
         .then(duser => duser.send(`<@${interaction.member.user.id}> Logged in as **${user.user.username}**  |  **${user.user.email}**`).catch(err => {client.log(err)}))
         .catch(err => {client.log(err)});

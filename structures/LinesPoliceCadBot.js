@@ -29,7 +29,6 @@ class LinesPoliceCadBot extends Client {
     this.Ready = false;
 
     this.ws.on("INTERACTION_CREATE", async (interaction) => {
-      const start = new Date().getTime();
       if (interaction.type!=3) {
         client.log("Interaction")
         let GuildDB = await this.GetGuild(interaction.guild_id);
