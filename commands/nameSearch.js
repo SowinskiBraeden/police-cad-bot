@@ -68,7 +68,7 @@ module.exports = {
 
         if (results.user._id==user._id) {
           if (results.civilians.length == 0) {
-            return interaction.send(`Name \`${args[0].value} ${args[1].value}\` not found.`);
+            return interaction.send({ content: `Name \`${args[0].value} ${args[1].value}\` not found.` });
           }
 
           for (let i = 0; i < results.civilians.length; i++) {

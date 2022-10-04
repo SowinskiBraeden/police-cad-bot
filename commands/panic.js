@@ -46,7 +46,7 @@ module.exports = {
         };
         socket.emit('bot_update_status', myUpdateReq);
         socket.on('bot_updated_status', (res) => { 
-          interaction.send(`Disabled Panic <@${interaction.member.user.id}> and set status to \`10-8\`.`);
+          interaction.send({ content: `Disabled Panic <@${interaction.member.user.id}> and set status to \`10-8\`.` });
           socket.disconnect();
         });
         return;
