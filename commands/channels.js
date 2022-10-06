@@ -23,7 +23,7 @@ module.exports = {
       }
 
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
-      if (guild.server.hasCustomChannels==false) {
+      if (client.exists(guild.server.hasCustomChannels) || !guild.server.hasCustomChannels) {
         return interaction.send({ content: 'There are no channels set for the bot.' });
       }
 

@@ -36,7 +36,7 @@ module.exports = {
         return interaction.send({ content: `Uh Oh! The role <@&${args[0].value}> connot be found.` });
       } else {
         let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
-        if (guild.server.hasCustomRoles==false) return interaction.send({ content: `There are no roles to be removed.` });
+        if (!client.exists(guild.server.hasCustomRoles) || !guild.server.hasCustomRoles) return interaction.send({ content: `There are no roles to be removed.` });
         if (!guild.server.allowedRoles.includes(roleid)) return interaction.send({ content: `The role <@&${args[0].value}> is not added to your roles.` });
         for (let i = 0; i < guild.server.allowedRoles.length; i++) {
           if (guild.server.allowedRoles[i]==roleid) {
