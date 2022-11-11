@@ -23,13 +23,13 @@ module.exports = {
       }
 
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
-      if (client.exists(guild.server.hasCustomChannels) || !guild.server.hasCustomChannels) {
+      if (!GuildDB.customChannelStatus) {
         return interaction.send({ content: 'There are no channels set for the bot.' });
       }
 
       let channels = ``;
       for (let i = 0; i < guild.server.allowedChannels.length; i++) {
-        if (client.exists(guild.server.allowedChannels[i])) continue;
+        if (!client.exists(guild.server.allowedChannels[i])) continue;
         else channels += `\n<#${guild.server.allowedChannels[i]}>`;
       }
       let channelsEmbed = new EmbedBuilder()
