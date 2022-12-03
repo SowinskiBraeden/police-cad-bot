@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 module.exports = {
 	Dev: "PRODUCTION",
 	Version: "3.1.2",

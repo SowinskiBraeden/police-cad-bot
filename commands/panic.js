@@ -65,7 +65,7 @@ module.exports = {
         socket.emit('panic_button_update', req);
         socket.disconnect();
         let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":GuildDB.serverID}).then(guild => guild);
-        if (guild.server.pingOnPanic) return interaction.send({ content: `Attention <@&${guild.server.pingRole}>! \`${user.user.username}\` has activated panic` });
+        if (guild.server.pingOnPanic) return interaction.send({ content: `Attention <@&${guild.server.pingRole}> \`${user.user.username}\` has activated panic` });
         return;
       }
     },
