@@ -115,12 +115,12 @@ module.exports = {
             status: null,
             bot_request: true
           };
-          if (queryString.substr(8, 6)=='revoke') {
+          if (queryString.split('-')[1]=='revoke') {
             query.status = 2;
-            query._id = queryString.substr(15, 24);
-          } else if (queryString.substr(8, 9)=='reinstate') {
+            query._id = queryString.split('-')[2];
+          } else if (queryString.split('-')[1]=='reinstate') {
             query.status = 1;
-            query._id = queryString.substr(18, 24);
+            query._id = queryString.split('-')[2];
           }
           socket.emit("update_drivers_license_status", query);
           socket.on("bot_updated_drivers_license_status", (res) => {
