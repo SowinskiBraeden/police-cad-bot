@@ -13,6 +13,7 @@ class LinesPoliceCadBot extends Client {
 
     this.config = config;
     this.commands = new Collection();
+    this.interactionHandlers = new Collection();
     this.logger = new Logger(path.join(__dirname, "..", "logs/Logs.log"));
 
     if (this.config.Token === "")
@@ -23,7 +24,7 @@ class LinesPoliceCadBot extends Client {
     this.db;
     this.dbo;
     this.connectMongo(this.config.mongoURI, this.config.dbo);
-    this.LoadCommands();
+    this.LoadCommandsAndInteractionHandlers();
     this.LoadEvents();
 
     this.Ready = false;
@@ -121,7 +122,7 @@ class LinesPoliceCadBot extends Client {
 
   exists(n) {return null != n && undefined != n && "" != n}
 
-  LoadCommands() {
+  LoadCommandsAndInteractionHandlers() {
     let CommandsDir = path.join(__dirname, '..', 'commands');
     fs.readdir(CommandsDir, (err, files) => {
       if (err) this.log(err);
@@ -135,6 +136,11 @@ class LinesPoliceCadBot extends Client {
                 ", Reason: File doesn't had run/name/desciption"
             );
           this.commands.set(file.split(".")[0].toLowerCase(), cmd);
+          if (this.exists(cmd.Interactions)) {
+            for (let [interaction, handler] of Object.entries(cmd.Interactions)) {
+              this.interactionHandlers.set(interaction, handler);
+            }
+          }
           this.log("Command Loaded: " + file.split(".")[0]);
         });
     });

@@ -104,10 +104,14 @@ module.exports = {
             )
         }
 
-        interaction.send({ embeds: [nameResult], components: [row] });
-
-        client.on("interactionCreate", ButtonInteraction => {
-          const socket = io.connect(client.config.socket);
+        return interaction.send({ embeds: [nameResult], components: [row] });
+      });
+    },
+  },
+  Interactions: {
+    license: {
+      run: async (client, ButtonInteraction, { GuildDB }) => {
+        const socket = io.connect(client.config.socket);
 
           let queryString = ButtonInteraction.customId;
           let query = {
@@ -124,12 +128,11 @@ module.exports = {
           }
           socket.emit("update_drivers_license_status", query);
           socket.on("bot_updated_drivers_license_status", (res) => {
-            if (!res.success) ButtonInteraction.update({ content: 'Failed to update license.', embeds: [], components: [] });
             socket.disconnect();
+            if (!res.success) return ButtonInteraction.update({ content: 'Failed to update license.', embeds: [], components: [] });
           });
           return ButtonInteraction.update({ content: 'Successfully updated license.', embeds: [], components: [] });
-        });
-      });
-    },
-  },
+      }
+    }
+  }
 }

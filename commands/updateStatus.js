@@ -66,9 +66,10 @@ module.exports = {
       const socket = io.connect(client.config.socket);
       socket.emit('bot_update_status', req);
       socket.on('bot_updated_status', (res) => {
-        interaction.send({ content: `Succesfully updated <@${interaction.member.user.id}>'s status to \`${args[0].value}\`` });
         socket.disconnect();
-      });  
+        return interaction.send({ content: `Succesfully updated <@${interaction.member.user.id}>'s status to \`${args[0].value}\`` });
+      });
+      return;
     },
   },
 }

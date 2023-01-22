@@ -63,8 +63,8 @@ module.exports = {
         socket.emit('botping', {message:'hello there'});
         socket.on('botpong', (data) => {
           if (debugConsole) client.log('Debug: Socket responded')
-          return interaction.send({ content: `Debug: Socket responded` })
           socket.disconnect();
+          return interaction.send({ content: `Debug: Socket responded` })
         });
       
       } else if (command == "apicheck") {
