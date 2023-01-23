@@ -86,7 +86,7 @@ class LinesPoliceCadBot extends Client {
       }
     }
 
-    if (databaselogslogs.attempts >= 5) {
+    if (databaselogs.attempts >= 5) {
       this.error('Failed to connect to mongodb after multiple attempts');
       return; // prevent further attempts
     }
