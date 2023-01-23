@@ -104,7 +104,7 @@ module.exports = {
             )
         }
 
-        return interaction.send({ embeds: [nameResult], components: [row] });
+        return interaction.send({ embeds: [nameResult], components: [row], flags: (1 << 6) });
       });
     },
   },

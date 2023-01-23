@@ -23,6 +23,22 @@ class Logger {
       ) + colors.yellow(" | Info: " + Text)
     );
   }
+
+  error(Text) {
+    let d = new Date();
+    this.logger.log({
+      level: "error",
+      message:
+        `${d.getHours()}:${
+          d.getMInutes
+        } - ${d.getData()}:${d.getMonth()}:${d.getFullYear()} | Error: ` + Text,
+    });
+    console.log(
+      colors.green(
+        `${d.getDate()}:${d.getMonth()}:${d.getFullYear()} - ${d.getHours}:${d.getMinutes()}`
+      ) + colors.yellow(" | Error: ") + colors.red(Text)
+    );
+  }
 }
 
 module.exports = Logger;

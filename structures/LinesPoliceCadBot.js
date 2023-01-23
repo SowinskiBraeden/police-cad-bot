@@ -24,6 +24,7 @@ class LinesPoliceCadBot extends Client {
     this.db;
     this.dbo;
     this.connectMongo(this.config.mongoURI, this.config.dbo);
+    this.databaseConnected = false;
     this.LoadCommandsAndInteractionHandlers();
     this.LoadEvents();
 
@@ -31,11 +32,12 @@ class LinesPoliceCadBot extends Client {
 
     this.ws.on("INTERACTION_CREATE", async (interaction) => {
       if (interaction.type!=3) {
-        client.log("Interaction")
         let GuildDB = await this.GetGuild(interaction.guild_id);
-
+        
         const command = interaction.data.name.toLowerCase();
         const args = interaction.data.options;
+        
+        client.log(`Interaction - ${command}`)
 
         //Easy to send respnose so ;)
         interaction.guild = await this.guilds.fetch(interaction.guild_id);
@@ -49,15 +51,20 @@ class LinesPoliceCadBot extends Client {
             }
           });
         };
+
+        if (!this.databaseConnected) {
+          let dbFailedEmbed = new EmbedBuilder()
+            .setDescription(`**Internal Error:**\nUh Oh D:  Its not you, its me.\nThe bot has failed to connect to the database 5 times!\nContact the Developers`)
+            .setColor(client.config.Colors.Red);
+
+          return interaction.send({ embeds: [dbFailedEmbed] });
+        }
+
         let cmd = client.commands.get(command);
         try {
           cmd.SlashCommand.run(this, interaction, args, { GuildDB });
         } catch (err) {
-          const embed = new EmbedBuilder()
-            .setDescription(`**Internal Error:**\nUh Oh D:  Its not you, its me.\nThis command has crashed\nContact the Developers`)
-            .setColor(client.config.Colors.Red)
-
-          return interaction.send({ embeds: [embed] });
+          this.sendInternalError(interaction, err);
         }
       }
     });
@@ -66,9 +73,42 @@ class LinesPoliceCadBot extends Client {
   }
 
   async connectMongo(mongoURI, dbo) {
-    this.db = await MongoClient.connect(mongoURI,{useUnifiedTopology:true});
-    this.dbo = this.db.db(dbo);
-    this.log('Successfully connected to mongoDB');
+    let failed = false;
+    
+    let dbLogDir = path.join(__dirname, '..', 'logs', 'database-logs.json');
+    let databaselogs;
+    try {
+      databaselogs = JSON.parse(fs.readFileSync(dbLogDir));
+    } catch (err) {
+      databaselogs = {
+        attempts: 0,
+        connected: false,
+      }
+    }
+
+    if (databaselogslogs.attempts >= 5) {
+      this.error('Failed to connect to mongodb after multiple attempts');
+      return; // prevent further attempts
+    }
+
+    try {
+      // Connect to MongoDB
+      this.db = await MongoClient.connect(mongoURI,{useUnifiedTopology:true});
+      this.dbo = this.db.db(dbo);
+      this.log('Successfully connected to mongoDB');
+      databaselogs.connected = true;
+      databaselogs.attempts = 0;
+      this.databaseConnected = true;
+    } catch (err) {
+      databaselogs.attempts++;
+      this.error(`Failed to connect to mongodb: attempt ${databaselogs.attempts}`);
+      failed = true;
+    }
+
+    // write JSON string to a file
+    await fs.writeFileSync(dbLogDir, JSON.stringify(databaselogs));
+
+    if (failed) process.exit(-1);
   }
 
   // This is for the 'panic' command when enabling panic
@@ -125,7 +165,7 @@ class LinesPoliceCadBot extends Client {
   LoadCommandsAndInteractionHandlers() {
     let CommandsDir = path.join(__dirname, '..', 'commands');
     fs.readdir(CommandsDir, (err, files) => {
-      if (err) this.log(err);
+      if (err) this.error(err);
       else
         files.forEach((file) => {
           let cmd = require(CommandsDir + "/" + file);
@@ -153,10 +193,20 @@ class LinesPoliceCadBot extends Client {
       else
         files.forEach((file) => {
           const event = require(EventsDir + "/" + file);
-          this.on(file.split(".")[0], event.bind(null, this));
+          if (file.split(".")[0] == 'interactionCreate') this.on(file.split(".")[0], i => event(this, i));
+          else this.on(file.split(".")[0], event.bind(null, this));
           this.logger.log("Event Loaded: " + file.split(".")[0]);
         });
     });
+  }
+
+  sendInternalError(Interaction, Error) {
+    this.error(Error);
+    const embed = new EmbedBuilder()
+      .setDescription(`**Internal Error:**\nUh Oh D:  Its not you, its me.\nThis command has crashed\nCOntact the Developers`)
+      .setColor(this.config.Colors.Red)
+
+    Interaction.send({ embeds: [embed] });
   }
 
   sendTime(Channel, Error) {
@@ -232,21 +282,8 @@ class LinesPoliceCadBot extends Client {
     } else return true // There is no role limits
   }
 
-  log(Text) {
-    this.logger.log(Text);
-  }
-
-  sendError(Channel, Error) {
-    let embed = new EmbedBuilder()
-      .setTitle("An error occured")
-      .setColor("RED")
-      .setDescription(Error)
-      .setFooter({
-        text: "If you think this as a bug, please report it in the support server!"
-      });
-
-    Channel.send(embed);
-  }
+  log(Text) { this.logger.log(Text); }
+  error(Text) { this.logger.error(Text); }
 
   build() {
     this.login(this.config.Token);

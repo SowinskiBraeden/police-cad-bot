@@ -2,7 +2,7 @@ require('dotenv').config()
 
 module.exports = {
 	Dev: "PRODUCTION",
-	Version: "3.1.4",
+	Version: "3.1.5",
   Admins: ["362791661274660874"], // Admins of the bot
 	DefaultPrefix: "?",
 	socket: "https://www.linespolice-cad.com/",
@@ -17,7 +17,9 @@ module.exports = {
   api_token: process.env.API_TOKEN || "",
   mongoURI: process.env.mongoURI || "mongodb://localhost:27017",
   dbo: process.env.dbo || "knoldus",
-
+  Colors: {
+    Red: "#ba0f0f"
+  },
   Presence: {
     status: "online", // You can show online, idle, and dnd
     name: "Grand Theft Auto V", // The message shown
