@@ -115,11 +115,8 @@ module.exports = {
               }
             }
             if (weight!=null&&weight!=undefined&&weight!='') {
-              if (results.civilians[i].civilian.weightClassification=='imperial') {
-                nameResult.addFields({ name: '**Weight**', value: `\`${weight}lbs.\``, inline: true });
-              } else {
-                nameResult.addFields({ name: '**Weight**', value: `\`${weight}kgs.\``, inline: true });
-              } 
+              let units = results.civilians[i].civilian.weightClassification=='imperial' ? 'lbs.' : 'kgs.';
+              nameResult.addFields({ name: '**Weight**', value: `\`${weight}${units}\``, inline: true });
             }
             if (eyeColor!=null&&eyeColor!=undefined&&eyeColor!='') nameResult.addFields({name:'**Eye Color**',value:`\`${eyeColor}\``,inline:true});
             if (hairColor!=null&&hairColor!=undefined&&hairColor!='') nameResult.addFields({name:'**Hair Color**',value:`\`${hairColor}\``,inline:true});
