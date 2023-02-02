@@ -218,8 +218,14 @@ class LinesPoliceCadBot extends Client {
   }
 
   RegisterSlashCommands() {
+    let p = Promise.resolve()
     this.guilds.cache.forEach((guild) => {
-      require("../util/RegisterSlashCommands")(this, guild.id);
+      p = promise.then(() => {
+        require("../util/RegisterSlashCommands")(this, guild.id);
+        return new Promise((resolve) => {
+          setTimeout(resolve, 1000);
+        })
+      })
     });
   }
 
