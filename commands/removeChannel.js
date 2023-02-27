@@ -36,7 +36,7 @@ module.exports = {
       if (!channel) return interaction.send({ content: `Uh Oh! The channel <#${args[0].value}> connot be found.` });
       let guild = await client.dbo.collection("prefixes").findOne({"server.serverID":interaction.guild.id}).then(guild => guild);
       if (guild.server.hasCustomChannels==false) return interaction.send({ content: `There are no channels to be removed.` });
-      if (!guild.server.allowedChannels.includes(channelid)) return interaction.send({ content: `The channel <#${args[0].value}> is not added to your roles.` });
+      if (!guild.server.allowedChannels.includes(channelid)) return interaction.send({ content: `The channel <#${args[0].value}> is not added to your channels.` });
       for (let i = 0; i < guild.server.allowedChannels.length; i++) {
         if (guild.server.allowedChannels[i]==channelid) {
           if ((guild.server.allowedChannels.length-1)==0) {
