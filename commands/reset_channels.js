@@ -21,7 +21,7 @@ module.exports = {
       const permissions = bitfieldCalculator.permissions(interaction.member.permissions);
       if (!permissions.includes("MANAGE_GUILD")) return interaction.send({ content: 'You don\'t have the permissions to use this command.' });
 
-      client.dbo.collection("prefixes").updateOne({"server.serverID":interaction.guild.id},{$set:{"server.allowedChannels":[]},$set:{"server.hasCustomChannels":false}},function(err, res) {
+      client.dbo.collection("prefixes").updateOne({"server.serverID":interaction.guild.id},{$set:{"server.allowedChannels": [], "server.hasCustomChannels": false}},function(err, res) {
         if (err) throw err;
         return interaction.send({ content: `Successfully reset all configured channels` });
       });
