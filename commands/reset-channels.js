@@ -1,9 +1,9 @@
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
-  name: "setchannel",
-  description: "Add channel to allowed channels",
-  usage: "[channel]",
+  name: "reset-channels",
+  description: "Reset channels",
+  usage: "[",
   permissions: {
     channel: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
     member: ["MANAGE_GUILD"],
