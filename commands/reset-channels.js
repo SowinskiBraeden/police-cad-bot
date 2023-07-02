@@ -17,7 +17,7 @@ module.exports = {
      * @param {*} param3
     */
     run: async (client, interaction, args, { GuildDB }) => {
-      client.dbo.collection("prefixes").updateOne({"server.serverID":interaction.guild.id},{set:{"server.allowedChannels":[]]},$set:{"server.hasCustomChannels":false}},function(err, res) {
+      client.dbo.collection("prefixes").updateOne({"server.serverID":interaction.guild.id},{set:{"server.allowedChannels":[]},$set:{"server.hasCustomChannels":false}},function(err, res) {
         if (err) throw err;
         return interaction.send({ content: `Successfully reset channels..` });
       });
