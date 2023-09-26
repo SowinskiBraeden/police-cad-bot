@@ -1,6 +1,8 @@
-const LinesPoliceCadBot = require('./structures/LinesPoliceCadBot');
-const { GatewayIntentBits } = require('discord.js');
+const { ShardingManager } = require('discord.js');
 const config = require('./config/config');
 
-let client = new LinesPoliceCadBot({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] }, config);
-client.build()
+const manager = new ShardingManager('./bot.js', { token: config.Token });
+
+manager.on('shardCreate', shard => console.log(`Launched shard ${shard.id}`));
+
+manager.spawn();
