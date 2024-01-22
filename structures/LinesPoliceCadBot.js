@@ -280,12 +280,12 @@ class LinesPoliceCadBot extends Client {
   */
   async verifyUseCommand(serverID, rolesCache, isList) {
     let { customRoleStatus } = await this.GetGuild(serverID)
-    if (customRoleStatus) {
-      let hasRole = await this.checkRoleStatus(rolesCache, serverID, isList);
-      if (hasRole) {
-        return true // User has role, can use command
-      } else return false // User does not have role, can't use command
-    } else return true // There is no role limits
+    if (!customRoleStatus) return false; // There is no role limits
+
+    let hasRole = await this.checkRoleStatus(rolesCache, serverID, isList);
+    if (!hasRole) return false; // User does not have role
+
+    return true; // User has role
   }
 
   log(Text) { this.logger.log(Text); }
