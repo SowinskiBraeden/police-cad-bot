@@ -218,7 +218,8 @@ class LinesPoliceCadBot extends Client {
 
   async checkRoleStatus(rolesCache, serverID, isList) {
     let hasRole = false;
-    let guild = await this.dbo.collection("prefixes").findOne({"server.serverID":serverID}).then(guild => guild);
+    let guild = await this.dbo.collection("prefixes").findOne({"server.serverID": serverID}).then(guild => guild);
+
     // If user has one of any in the list of allowed roles, hasRole is true
     for (let i = 0; i < guild.server.allowedRoles.length; i++) {
       if (!isList) {
@@ -268,6 +269,27 @@ class LinesPoliceCadBot extends Client {
   async verifyUseCommand(serverID, rolesCache, isList) {
     let { customRoleStatus } = await this.GetGuild(serverID)
     if (!customRoleStatus) return false; // There is no role limits
+
+    // Clear any deleted roles
+    const guild = await this.guilds.cache.get(serverID);
+    let filteredRoles = [];
+    let update = false;
+    for (let i = 0; i < guild.server.allowedRoles.length; i++) {
+      const role = guild.roles.cache.find(role => role.id == guild.server.allowedRoles[i])
+      if (role) filteredRoles.push(role);
+      if (!role) update = true;
+    }
+
+    if (update) {
+      let newHasCustomRoles = filteredRoles > 0;
+
+      await this.dbo.collection("prefixes").updateOne({ 'server.serverID': serverID }, { $set: {
+        'server.allowedRoles': filteredRoles,
+        'server.hasCustomRoles': newHasCustomRoles,
+      }}, (err, res) => {
+        if (err) throw err;
+      });
+    }
 
     let hasRole = await this.checkRoleStatus(rolesCache, serverID, isList);
     if (!hasRole) return false; // User does not have role
