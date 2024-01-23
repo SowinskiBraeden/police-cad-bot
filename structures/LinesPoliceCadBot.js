@@ -271,10 +271,11 @@ class LinesPoliceCadBot extends Client {
     if (!customRoleStatus) return false; // There is no role limits
 
     // Clear any deleted roles
-    const guild = await this.guilds.cache.get(serverID);
     let filteredRoles = [];
     let update = false;
-    for (let i = 0; i < guild.server.allowedRoles.length; i++) {
+    let guildDB = this.dbo.collection.findOne({ 'server.serverID': serverID }).then(guildDB => guildDB)
+    for (let i = 0; i < guildDB.server.allowedRoles.length; i++) {
+      const guild = await this.guilds.cache.get(serverID);
       const role = guild.roles.cache.find(role => role.id == guild.server.allowedRoles[i])
       if (role) filteredRoles.push(role);
       if (!role) update = true;
@@ -292,9 +293,7 @@ class LinesPoliceCadBot extends Client {
     }
 
     let hasRole = await this.checkRoleStatus(rolesCache, serverID, isList);
-    if (!hasRole) return false; // User does not have role
-
-    return true; // User has role
+    return hasRole;
   }
 
   log(Text) { this.logger.log(Text); }

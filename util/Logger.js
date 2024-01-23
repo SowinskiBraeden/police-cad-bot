@@ -31,7 +31,7 @@ class Logger {
       message:
         `${d.getHours()}:${
           d.getMInutes
-        } - ${d.getData()}:${d.getMonth()}:${d.getFullYear()} | Error: ` + Text,
+        } - ${d.getDate()}:${d.getMonth()}:${d.getFullYear()} | Error: ` + Text,
     });
     console.log(
       colors.green(
