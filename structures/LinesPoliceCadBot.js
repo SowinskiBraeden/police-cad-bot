@@ -216,25 +216,16 @@ class LinesPoliceCadBot extends Client {
     });
   }
 
-  async checkRoleStatus(rolesCache, serverID, isList) {
-    let hasRole = false;
-    let guild = await this.dbo.collection("prefixes").findOne({"server.serverID": serverID}).then(guild => guild);
+  async checkRoleStatus(rolesCache, serverID) {
+    let guild = await this.dbo.collection("prefixes").findOne({ "server.serverID": serverID }).then(guild => guild);
 
-    // If user has one of any in the list of allowed roles, hasRole is true
+    if (guild.server.allowedRoles.length == 0) return true; // If we are in this function, and there are no roles to compare to, return true as if we had the role anyway
+
     for (let i = 0; i < guild.server.allowedRoles.length; i++) {
-      if (!isList) {
-        if (rolesCache.some(role => role.id == guild.server.allowedRoles[i])) {
-          hasRole = true
-          break
-        }
-      } else {
-        if (rolesCache.includes(guild.server.allowedRoles[i])) {
-          hasRole = true
-          break
-        }
-      }
+      if (rolesCache.some(role => role.id == guild.server.allowedRoles[i])) return true; // they have at least one matching role
     }
-    return hasRole;
+
+    return false; // they have no matching roles.
   }
 
   async GetGuild(GuildId) {
@@ -266,7 +257,7 @@ class LinesPoliceCadBot extends Client {
    command ie. has cop role to use
    name-search
   */
-  async verifyUseCommand(serverID, rolesCache, isList) {
+  async verifyUseCommand(serverID, rolesCache) {
     let { customRoleStatus } = await this.GetGuild(serverID)
     if (!customRoleStatus) return false; // There is no role limits
 
@@ -281,7 +272,9 @@ class LinesPoliceCadBot extends Client {
       if (!role) update = true;
     }
 
-    if (update) {
+    // If some roles no longer exists, update
+    // or if customRoleStatus is true but no roles exist, update
+    if (update || (filteredRoles == 0 && customRoleStatus)) {
       let newHasCustomRoles = filteredRoles > 0;
 
       await this.dbo.collection("prefixes").updateOne({ 'server.serverID': serverID }, { $set: {

@@ -22,7 +22,7 @@ module.exports = {
         return interaction.send({ content: `You are not allowed to use the bot in this channel.`, flags: (1 << 6) });
       }
 
-      let useCommand = await client.verifyUseCommand(GuildDB.serverID, interaction.member.roles, true);
+      let useCommand = await client.verifyUseCommand(GuildDB.serverID, interaction.member.roles);
       if (!useCommand) return interaction.send({ content: "You don't have permission to use this command", flags: (1 << 6) });
       
       let user = await client.dbo.collection("users").findOne({"user.discord.id": interaction.member.user.id}).then(user => user);
