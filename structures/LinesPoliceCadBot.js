@@ -16,9 +16,8 @@ class LinesPoliceCadBot extends Client {
     this.interactionHandlers = new Collection();
     this.logger = new Logger(path.join(__dirname, "..", "logs/Logs.log"));
 
-    if (this.config.Token === "")
-    return new TypeError(
-      "The botconfig.js is not filled out. Please make sure nothing is blank, otherwise the bot will not work properly."
+    if (this.config.Token === "") return new TypeError(
+      "The config.js is missing a token, please ensure the token is provided."
     );
 
     this.db;
@@ -74,7 +73,7 @@ class LinesPoliceCadBot extends Client {
 
   async connectMongo(mongoURI, dbo) {
     let failed = false;
-    
+
     let dbLogDir = path.join(__dirname, '..', 'logs', 'database-logs.json');
     let databaselogs;
     try {
@@ -83,7 +82,7 @@ class LinesPoliceCadBot extends Client {
       databaselogs = {
         attempts: 0,
         connected: false,
-      }
+      };
     }
 
     if (databaselogs.attempts >= 5) {
@@ -92,8 +91,8 @@ class LinesPoliceCadBot extends Client {
     }
 
     try {
-      // Connect to MongoDB
-      this.db = await MongoClient.connect(mongoURI,{useUnifiedTopology:true});
+      // Connect to Mongo database.
+      this.db = await MongoClient.connect(mongoURI, { useUnifiedTopology: true,  connectTimeoutMS: 1000 });
       this.dbo = this.db.db(dbo);
       this.log('Successfully connected to mongoDB');
       databaselogs.connected = true;
@@ -101,12 +100,13 @@ class LinesPoliceCadBot extends Client {
       this.databaseConnected = true;
     } catch (err) {
       databaselogs.attempts++;
-      this.error(`Failed to connect to mongodb: attempt ${databaselogs.attempts}`);
+      let db = (mongoURI.includes("@") ? mongoURI.split("@")[1] : mongoURI.split("//")[1]).endsWith("/") ? mongoURI.slice(0, -1) : mongoURI;
+      this.error(`Failed to connect to mongodb (mongodb://${db}/${dbo}): attempt ${databaselogs.attempts} - ${err}`);
       failed = true;
     }
 
     // write JSON string to a file
-    await fs.writeFileSync(dbLogDir, JSON.stringify(databaselogs));
+    fs.writeFileSync(dbLogDir, JSON.stringify(databaselogs));
 
     if (failed) process.exit(-1);
   }
@@ -114,51 +114,38 @@ class LinesPoliceCadBot extends Client {
   // This is for the 'panic' command when enabling panic
   // May be used by other interaction
   async forceUpdateStatus(status, user) {
-    let onDuty=null;
-    let updateDuty=false;
-    if (status=='10-41') {
-      onDuty=true;
-      updateDuty=true;
-      status='Online';
+    let onDuty = null;
+    let updateDuty = false;
+    
+    // If the are off duty, make them on duty + online
+    if (status == '10-41') {
+      onDuty = true;
+      updateDuty = true;
+      status = 'Online';
     }
-    if (status=='10-42') {
-      onDuty=false;
-      updateDuty=true;
-      status='Offline';
+    
+    // If they are on duty, 
+    if (status == '10-42') {
+      onDuty = false;
+      updateDuty = true;
+      status = 'Offline';
     }
-    let req={
-      userID: user._id,
-      status: status,
-      setBy: 'Self',
-      onDuty: onDuty,
+    
+    let req = {
+      userID:     user._id,
+      status:     status,
+      setBy:      'Self',
+      onDuty:     onDuty,
       updateDuty: updateDuty
     };
+
     const socket = io.connect(this.config.socket);
+    
     socket.emit('bot_update_status', req);
     socket.on('bot_updated_status', (res) => {
-      socket.disconnect();
+      if (res.userID == user._id) socket.disconnect(); // ensure success response is for us
     });
   }
-
-  /* Not yet done
-  async canUseCommand(interaction, GuildDB) {
-    if (!GuildDB.customChannelStatus) return true;
-    let channel_id;
-    for (let i = 0; i < GuildDB.allowedChannels.length; i++) {
-      channel_id = GuildDB.allowedChannels[i];
-      if(interaction.guild.channels.cache.get(channel_id) === undefined)  { 
-        this.dbo.collection("prefixes").updateOne({"server.serverID":interaction.guild.id},{$pull:{"server.allowedChannels":channel_id},$set:{"server.hasCustomChannels":false}},function(err, res) {
-          if (err) throw err;
-          GuildDB.allowedChannels.splice(i, i+1);
-          if (GuildDB.allowedChannels.length == 0) GuildDB.customChannelStatus = false;
-        });
-      }
-    }
-    if (!GuildDB.allowedChannels.includes(interaction.channel_id)) {
-      return false;
-    }
-  }
-  */
 
   exists(n) {return null != n && undefined != n && "" != n}
 
