@@ -220,7 +220,7 @@ class LinesPoliceCadBot extends Client {
     if (allowedRoles.length == 0) return true; // If we are in this function, and there are no roles to compare to, return true as if we had the role anyway
 
     for (let i = 0; i < allowedRoles.length; i++) {
-      if (rolesCache.some(role => role.id == allowedRoles[i])) return true; // they have at least one matching role
+      if (rolesCache.includes(allowedRoles[i])) return true; // they have at least one matching role
       else continue;
     }
 
