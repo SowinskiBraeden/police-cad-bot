@@ -267,8 +267,8 @@ class LinesPoliceCadBot extends Client {
     let update = false;
     for (let i = 0; i < guildDB.allowedRoles.length; i++) {
       const guild = await this.guilds.cache.get(serverID);
-      const role = guild.roles.cache.find(role => role.id == guild.server.allowedRoles[i])
-      if (role) filteredRoles.push(role);
+      const role = guild.roles.cache.find(role => role.id == guildDB.allowedRoles[i])
+      if (role) filteredRoles.push(guildDB.allowedRoles[i]);
       if (!role) update = true;
     }
 
