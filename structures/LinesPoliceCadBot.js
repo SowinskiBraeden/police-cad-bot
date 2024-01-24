@@ -216,13 +216,11 @@ class LinesPoliceCadBot extends Client {
     });
   }
 
-  async checkRoleStatus(rolesCache, serverID) {
-    let guild = await this.dbo.collection("prefixes").findOne({ "server.serverID": serverID }).then(guild => guild);
+  async checkRoleStatus(rolesCache, allowedRoles) {
+    if (allowedRoles.length == 0) return true; // If we are in this function, and there are no roles to compare to, return true as if we had the role anyway
 
-    if (guild.server.allowedRoles.length == 0) return true; // If we are in this function, and there are no roles to compare to, return true as if we had the role anyway
-
-    for (let i = 0; i < guild.server.allowedRoles.length; i++) {
-      if (rolesCache.some(role => role.id == guild.server.allowedRoles[i])) return true; // they have at least one matching role
+    for (let i = 0; i < allowedRoles.length; i++) {
+      if (rolesCache.some(role => role.id == allowedRoles[i])) return true; // they have at least one matching role
     }
 
     return false; // they have no matching roles.
@@ -237,6 +235,7 @@ class LinesPoliceCadBot extends Client {
         server: {
           serverID: GuildId,
           allowedChannels: [],
+          allowedRoles: [],
         }
       }
       this.dbo.collection("prefixes").insertOne(guild, function(err, res) {
@@ -246,6 +245,8 @@ class LinesPoliceCadBot extends Client {
     let guildData = {
       allowedChannels: guild.server.allowedChannels,
       customChannelStatus: guild.server.allowedChannels.length > 0 ? true : false,
+      customRoleStatus: guild.server.allowedRoles > 0,
+      allowedRoles: guild.server.allowedRoles,
       serverID: GuildId
     }
     return guildData;
@@ -258,13 +259,12 @@ class LinesPoliceCadBot extends Client {
    name-search
   */
   async verifyUseCommand(serverID, rolesCache) {
-    let { customRoleStatus } = await this.GetGuild(serverID)
-    if (!customRoleStatus) return false; // There is no role limits
+    let guildDB = await this.GetGuild(serverID).customRoleStatus;
+    if (!guildDB.customRoleStatus) return true; // There is no role limits, can use command
 
     // Clear any deleted roles
     let filteredRoles = [];
     let update = false;
-    let guildDB = this.dbo.collection.findOne({ 'server.serverID': serverID }).then(guildDB => guildDB)
     for (let i = 0; i < guildDB.server.allowedRoles.length; i++) {
       const guild = await this.guilds.cache.get(serverID);
       const role = guild.roles.cache.find(role => role.id == guild.server.allowedRoles[i])
@@ -285,7 +285,7 @@ class LinesPoliceCadBot extends Client {
       });
     }
 
-    let hasRole = await this.checkRoleStatus(rolesCache, serverID, isList);
+    let hasRole = await this.checkRoleStatus(rolesCache, filteredRoles);
     return hasRole;
   }
 
