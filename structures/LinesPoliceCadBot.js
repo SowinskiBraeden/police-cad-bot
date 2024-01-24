@@ -210,7 +210,7 @@ class LinesPoliceCadBot extends Client {
       p = p.then(() => {
         require("../util/RegisterSlashCommands")(this, guild.id);
         return new Promise((resolve) => {
-          setTimeout(resolve, 1000);
+          setTimeout(resolve, 500);
         })
       })
     });
@@ -265,7 +265,7 @@ class LinesPoliceCadBot extends Client {
     // Clear any deleted roles
     let filteredRoles = [];
     let update = false;
-    for (let i = 0; i < guildDB.server.allowedRoles.length; i++) {
+    for (let i = 0; i < guildDB.allowedRoles.length; i++) {
       const guild = await this.guilds.cache.get(serverID);
       const role = guild.roles.cache.find(role => role.id == guild.server.allowedRoles[i])
       if (role) filteredRoles.push(role);
