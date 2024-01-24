@@ -259,7 +259,7 @@ class LinesPoliceCadBot extends Client {
    name-search
   */
   async verifyUseCommand(serverID, rolesCache) {
-    let guildDB = await this.GetGuild(serverID).customRoleStatus;
+    let guildDB = await this.GetGuild(serverID);
     if (!guildDB.customRoleStatus) return true; // There is no role limits, can use command
 
     // Clear any deleted roles
