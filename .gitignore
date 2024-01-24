@@ -13,3 +13,5 @@ dev.js
 # Logs
 logs/*
 Logs.log
+
+.env

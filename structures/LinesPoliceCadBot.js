@@ -214,7 +214,6 @@ class LinesPoliceCadBot extends Client {
         })
       })
     });
-    // require('../util/RegisterSlashCommands')(this, "942619852567363674");
   }
 
   async checkRoleStatus(rolesCache, allowedRoles) {

@@ -49,7 +49,7 @@ module.exports = {
         socket.emit('bot_update_status', myUpdateReq);
         socket.on('bot_updated_status', (res) => {
           if (res.userID == user._id) {
-            interaction.send({ content: `Disabled Panic <@${interaction.member.user.id}> and set status to \`10-8\`.` });
+            interaction.send({ content: `Disabled Panic and set status to \`10-8\`.`, flags: (1 << 6) });
             socket.disconnect();
           }
         });
@@ -73,8 +73,12 @@ module.exports = {
         socket.disconnect();
       
         let guild = await client.dbo.collection("prefixes").findOne({"server.serverID": GuildDB.serverID}).then(guild => guild);
-        if (guild.server.pingOnPanic) return interaction.send({ content: `Attention <@&${guild.server.pingRole}> \`${user.user.username}\` has activated panic` });
       
+        if (guild.server.pingOnPanic) {
+          const channel = client.channels.cache.get(interaction.channel_id);
+          channel.send({ content: `Attention <@&${guild.server.pingRole}> \`${user.user.username}\` has activated panic` });
+        }
+
         return interaction.send({ content: 'Successfully activated Panic', flags: (1 << 6) });
       }
     },
