@@ -221,6 +221,7 @@ class LinesPoliceCadBot extends Client {
 
     for (let i = 0; i < allowedRoles.length; i++) {
       if (rolesCache.some(role => role.id == allowedRoles[i])) return true; // they have at least one matching role
+      else continue;
     }
 
     return false; // they have no matching roles.
@@ -265,17 +266,17 @@ class LinesPoliceCadBot extends Client {
     // Clear any deleted roles
     let filteredRoles = [];
     let update = false;
+    const guild = await this.guilds.cache.get(serverID);
     for (let i = 0; i < guildDB.allowedRoles.length; i++) {
-      const guild = await this.guilds.cache.get(serverID);
-      const role = guild.roles.cache.find(role => role.id == guildDB.allowedRoles[i])
-      if (role) filteredRoles.push(guildDB.allowedRoles[i]);
-      if (!role) update = true;
+      let role = guild.roles.cache.find(role => role.id == guildDB.allowedRoles[i])
+      if (!role) update = true; // this role no longer exists, we need to update, dont add to list
+      else filteredRoles.push(guildDB.allowedRoles[i]); // this role exists, add to list in case of update
     }
 
     // If some roles no longer exists, update
     // or if customRoleStatus is true but no roles exist, update
-    if (update || (filteredRoles == 0 && customRoleStatus)) {
-      let newHasCustomRoles = filteredRoles > 0;
+    if (update || (filteredRoles.length == 0 && customRoleStatus)) {
+      let newHasCustomRoles = filteredRoles.length > 0;
 
       await this.dbo.collection("prefixes").updateOne({ 'server.serverID': serverID }, { $set: {
         'server.allowedRoles': filteredRoles,
