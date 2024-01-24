@@ -245,7 +245,7 @@ class LinesPoliceCadBot extends Client {
     let guildData = {
       allowedChannels: guild.server.allowedChannels,
       customChannelStatus: guild.server.allowedChannels.length > 0 ? true : false,
-      customRoleStatus: guild.server.allowedRoles > 0,
+      customRoleStatus: guild.server.allowedRoles.length > 0 ? true : false,
       allowedRoles: guild.server.allowedRoles,
       serverID: GuildId
     }
