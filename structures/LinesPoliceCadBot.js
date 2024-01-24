@@ -214,6 +214,7 @@ class LinesPoliceCadBot extends Client {
         })
       })
     });
+    // require('../util/RegisterSlashCommands')(this, "942619852567363674");
   }
 
   async checkRoleStatus(rolesCache, allowedRoles) {
@@ -243,6 +244,7 @@ class LinesPoliceCadBot extends Client {
         if (err) throw err;
       });
     }
+    if (guild.server.allowedRoles == undefined) guild.server.allowedRoles = [];
     let guildData = {
       allowedChannels: guild.server.allowedChannels,
       customChannelStatus: guild.server.allowedChannels.length > 0 ? true : false,
