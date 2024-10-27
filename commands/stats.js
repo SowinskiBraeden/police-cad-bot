@@ -23,11 +23,15 @@ module.exports = {
         return interaction.send({ content: `You are not allowed to use the bot in this channel.` });
       }
       const { version } = require("discord.js");
+      const totalGuilds = await client.shard.fetchClientValues("guilds.cache.size").then(results => {
+        return results.reduce((acc, guildCount) => acc + guildCount, 0)
+      });
+      const totalMembers = await client.shard.broadcastEval(c => c.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0)).then(data => data.reduce((acc, memberCount) => acc + memberCount, 0));
       const stats = new EmbedBuilder()
           .setColor('#0099ff')
           .setTitle("Current LPC-Bot Statistics")
           .setURL(client.config.SupportServer)
-          .setDescription(`**Channels** : \`${client.channels.cache.size}\`\n**Servers** : \`${client.guilds.cache.size}\`\n**Users** : \`${client.users.cache.size}\``)
+          .setDescription(`**Servers** : \`${totalGuilds}\`\n**Users** : \`${totalMembers}\``)
       interaction.send({ embeds: [stats] })
     },
   },
