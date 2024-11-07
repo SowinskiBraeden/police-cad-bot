@@ -1,17 +1,8 @@
 # dependencies
 node_modules/*
 
-# test file
-default.js
-test.js
-default.js
-
-# Dev
-config/dev-config.js
-dev.js
-
-# Logs
+# logs
 logs/*
-Logs.log
 
+# environment variables
 .env
