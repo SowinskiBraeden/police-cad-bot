@@ -1,5 +1,12 @@
-### Lines Police CAD Discord Bot
+# Lines Police CAD Discord Bot
 
-This project is being archived and moved to the organization repository.
 
-Visit https://github.com/Lines-Police-CAD/police-cad-bot for issues, requests, commits, etc.
+> [!WARNING]
+> 
+> Migrating to Organization repository.
+> ---
+> 
+> ***Notice:*** This repository will transition to read-only mode starting on **November 7, 2024**.
+>
+> All new commits, issues, feature requests and more will take place on the organization repository.
+> Visit our [organization!](https://github.com/Lines-Police-CAD/)
